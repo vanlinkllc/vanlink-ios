@@ -41,6 +41,8 @@ export interface Job {
   scheduledTime?: string;
   createdAt: string;
   updatedAt: string;
+  customer?: Profile;
+  driver?: Profile;
 }
 
 export interface Bid {
@@ -64,6 +66,18 @@ export interface WalletTransaction {
   jobId?: string;
   paymentMethod?: string;
   createdAt: string;
+}
+
+export interface CreateJobInput {
+  pickupAddress: string;
+  dropoffAddress: string;
+  itemDescription: string;
+  itemValue: number;
+  budget: number;
+  pricingModel: 'fixed' | 'bid';
+  helpersRequired: number;
+  vehicleClass?: string;
+  scheduledTime?: string;
 }
 
 // Auth endpoints
@@ -101,6 +115,23 @@ export async function signOut(): Promise<void> {
   clearToken();
 }
 
+export async function forgotPassword(email: string): Promise<void> {
+  await api<void>('/auth/forgot-password', {
+    method: 'POST',
+    data: { email },
+  });
+}
+
+export async function resetPassword(
+  token: string,
+  newPassword: string
+): Promise<void> {
+  await api<void>('/auth/reset-password', {
+    method: 'POST',
+    data: { token, newPassword },
+  });
+}
+
 export async function getProfile(): Promise<Profile> {
   return api<Profile>('/auth/me');
 }
@@ -115,7 +146,7 @@ export async function updateProfile(
 }
 
 // Job endpoints
-export async function createJob(job: Record<string, unknown>): Promise<Job> {
+export async function createJob(job: CreateJobInput): Promise<Job> {
   return api<Job>('/jobs', {
     method: 'POST',
     data: job,
@@ -130,8 +161,13 @@ export async function fetchJobsForDriver(): Promise<Job[]> {
   return api<Job[]>('/jobs/driver/all');
 }
 
-export async function fetchAvailableJobs(): Promise<Job[]> {
-  return api<Job[]>('/jobs/available');
+export async function fetchAvailableJobs(
+  driverLat = 53.3498,
+  driverLng = -6.2603
+): Promise<Job[]> {
+  return api<Job[]>('/jobs/available', {
+    params: { driverLat, driverLng },
+  });
 }
 
 export async function acceptJob(jobId: string): Promise<Job> {
@@ -142,6 +178,35 @@ export async function acceptJob(jobId: string): Promise<Job> {
 
 export async function fetchJob(jobId: string): Promise<Job> {
   return api<Job>(`/jobs/${jobId}`);
+}
+
+export async function fetchActiveDriverJobs(): Promise<Job[]> {
+  return api<Job[]>('/jobs/my/active');
+}
+
+export async function completeJob(jobId: string): Promise<Job> {
+  return api<Job>(`/jobs/${jobId}/complete`, {
+    method: 'POST',
+  });
+}
+
+export async function createBid(
+  jobId: string,
+  amount: number,
+  message?: string
+): Promise<Bid> {
+  return api<Bid>(`/bids/job/${jobId}`, {
+    method: 'POST',
+    data: { amount, message },
+  });
+}
+
+export async function fetchBidsForJob(jobId: string): Promise<Bid[]> {
+  return api<Bid[]>(`/bids/job/${jobId}`);
+}
+
+export async function fetchMyBids(): Promise<Bid[]> {
+  return api<Bid[]>('/bids/my');
 }
 
 // Wallet endpoints

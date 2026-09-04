@@ -97,6 +97,7 @@ const SignupScreen: React.FC<Props> = ({ navigation, route }) => {
               value={email}
               onChangeText={setEmail}
               keyboardType="email-address"
+              autoCapitalize="none"
               editable={!loading}
             />
           </View>

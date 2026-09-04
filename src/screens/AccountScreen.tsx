@@ -5,14 +5,33 @@ import {
   Text,
   ScrollView,
   Alert,
-  ActivityIndicator,
+  RefreshControl,
 } from 'react-native';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/Button';
+import { StateView } from '@/components/StateView';
+import { titleCase } from '@/utils/format';
 
 const AccountScreen: React.FC = () => {
-  const { profile, signOut } = useAuth();
+  const { profile, signOut, refreshProfile } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const safeNumber = (value: number | undefined) =>
+    Number.isFinite(value) ? Number(value) : 0;
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    try {
+      setError(null);
+      await refreshProfile();
+    } catch (refreshError) {
+      setError(refreshError instanceof Error ? refreshError.message : 'Unable to refresh account.');
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   const handleLogout = async () => {
     Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
@@ -35,26 +54,41 @@ const AccountScreen: React.FC = () => {
 
   if (!profile) {
     return (
-      <View style={styles.container}>
-        <ActivityIndicator size="large" />
-      </View>
+      <StateView
+        title="Account unavailable"
+        message="Your profile could not be loaded."
+        actionLabel="Retry"
+        onAction={handleRefresh}
+      />
     );
   }
 
+  const firstInitial = profile.firstName?.charAt(0) || 'V';
+  const lastInitial = profile.lastName?.charAt(0) || 'L';
+
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView
+      style={styles.container}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
+    >
       <View style={styles.header}>
         <View style={styles.avatar}>
           <Text style={styles.avatarText}>
-            {profile.firstName.charAt(0)}
-            {profile.lastName.charAt(0)}
+            {firstInitial}
+            {lastInitial}
           </Text>
         </View>
         <Text style={styles.name}>
-          {profile.firstName} {profile.lastName}
+          {profile.firstName || 'VanLink'} {profile.lastName || 'User'}
         </Text>
         <Text style={styles.email}>{profile.email}</Text>
       </View>
+
+      {error ? (
+        <View style={styles.errorSection}>
+          <Text style={styles.errorText}>{error}</Text>
+        </View>
+      ) : null}
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Account Information</Text>
@@ -66,9 +100,7 @@ const AccountScreen: React.FC = () => {
 
         <View style={styles.infoRow}>
           <Text style={styles.infoLabel}>Role</Text>
-          <Text style={styles.infoValue}>
-            {profile.role.charAt(0).toUpperCase() + profile.role.slice(1)}
-          </Text>
+          <Text style={styles.infoValue}>{titleCase(profile.role)}</Text>
         </View>
 
         {profile.phone && (
@@ -91,7 +123,7 @@ const AccountScreen: React.FC = () => {
 
         <View style={styles.infoRow}>
           <Text style={styles.infoLabel}>Rating</Text>
-          <Text style={styles.infoValue}>{profile.rating.toFixed(1)} ⭐</Text>
+          <Text style={styles.infoValue}>{safeNumber(profile.rating).toFixed(1)} stars</Text>
         </View>
 
         <View style={styles.infoRow}>
@@ -101,20 +133,20 @@ const AccountScreen: React.FC = () => {
 
         <View style={styles.infoRow}>
           <Text style={styles.infoLabel}>Jobs Completed</Text>
-          <Text style={styles.infoValue}>{profile.jobsCompleted}</Text>
+          <Text style={styles.infoValue}>{safeNumber(profile.jobsCompleted)}</Text>
         </View>
 
         <View style={styles.infoRow}>
           <Text style={styles.infoLabel}>Acceptance Rate</Text>
           <Text style={styles.infoValue}>
-            {(profile.acceptanceRate * 100).toFixed(0)}%
+            {(safeNumber(profile.acceptanceRate) * 100).toFixed(0)}%
           </Text>
         </View>
 
         <View style={styles.infoRow}>
           <Text style={styles.infoLabel}>Cancellation Rate</Text>
           <Text style={styles.infoValue}>
-            {(profile.cancellationRate * 100).toFixed(0)}%
+            {(safeNumber(profile.cancellationRate) * 100).toFixed(0)}%
           </Text>
         </View>
       </View>
@@ -176,6 +208,19 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
     borderColor: '#e5e7eb',
+  },
+  errorSection: {
+    margin: 16,
+    padding: 12,
+    backgroundColor: '#fef2f2',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#fecaca',
+  },
+  errorText: {
+    color: '#991b1b',
+    fontSize: 14,
+    lineHeight: 20,
   },
   sectionTitle: {
     fontSize: 14,

@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import axios, { AxiosInstance } from 'axios';
+import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
 
 // VanLink API Client for React Native
 // Connects to the Railway NestJS backend
@@ -81,14 +81,19 @@ apiClient.interceptors.response.use(
 // Core API wrapper
 export async function api<T>(
   path: string,
-  options: { method?: string; data?: any } = {}
+  options: {
+    method?: string;
+    data?: unknown;
+    params?: Record<string, string | number | boolean | undefined>;
+  } = {}
 ): Promise<T> {
   try {
-    const config = {
+    const config: AxiosRequestConfig = {
       method: options.method || 'GET',
       url: path,
-      ...(options.data && { data: options.data }),
     };
+    if (options.data) config.data = options.data;
+    if (options.params) config.params = options.params;
 
     const response = await apiClient(config);
     return response.data;

@@ -2,6 +2,7 @@ import React from 'react';
 import {
   StyleSheet,
   TextInput as RNTextInput,
+  TextInputProps as RNTextInputProps,
   ViewStyle,
 } from 'react-native';
 
@@ -12,13 +13,10 @@ interface TextInputProps {
   secureTextEntry?: boolean;
   editable?: boolean;
   style?: ViewStyle;
-  keyboardType?:
-    | 'default'
-    | 'email-address'
-    | 'numeric'
-    | 'phone-pad'
-    | 'decimal-pad'
-    | 'visible-password';
+  keyboardType?: RNTextInputProps['keyboardType'];
+  autoCapitalize?: RNTextInputProps['autoCapitalize'];
+  multiline?: boolean;
+  numberOfLines?: number;
 }
 
 export const TextInput: React.FC<TextInputProps> = ({
@@ -29,16 +27,22 @@ export const TextInput: React.FC<TextInputProps> = ({
   editable,
   style,
   keyboardType = 'default',
+  autoCapitalize = 'sentences',
+  multiline,
+  numberOfLines,
 }) => {
   return (
     <RNTextInput
-      style={[styles.input, style]}
+      style={[styles.input, multiline && styles.multilineInput, style]}
       placeholder={placeholder}
       value={value}
       onChangeText={onChangeText}
       secureTextEntry={secureTextEntry}
       editable={editable}
       keyboardType={keyboardType}
+      autoCapitalize={autoCapitalize}
+      multiline={multiline}
+      numberOfLines={numberOfLines}
       placeholderTextColor="#999"
     />
   );
@@ -53,5 +57,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     fontSize: 16,
     fontFamily: 'System',
+  },
+  multilineInput: {
+    height: 96,
+    paddingTop: 12,
+    textAlignVertical: 'top',
   },
 });

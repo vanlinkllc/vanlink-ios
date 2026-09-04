@@ -4,10 +4,11 @@ import {
   View,
   Text,
   ScrollView,
-  ActivityIndicator,
   RefreshControl,
 } from 'react-native';
 import { useAuth } from '@/hooks/useAuth';
+import { StateView } from '@/components/StateView';
+import { formatCurrency, titleCase } from '@/utils/format';
 
 const HomeScreen: React.FC = () => {
   const { profile, refreshProfile } = useAuth();
@@ -25,11 +26,17 @@ const HomeScreen: React.FC = () => {
 
   if (!profile) {
     return (
-      <View style={styles.container}>
-        <ActivityIndicator size="large" />
-      </View>
+      <StateView
+        title="Profile unavailable"
+        message="Your account could not be loaded."
+        actionLabel="Retry"
+        onAction={handleRefresh}
+      />
     );
   }
+
+  const walletBalance = Number.isFinite(profile.walletBalance) ? profile.walletBalance : 0;
+  const rating = Number.isFinite(profile.rating) ? profile.rating : 0;
 
   return (
     <ScrollView
@@ -43,14 +50,14 @@ const HomeScreen: React.FC = () => {
           Welcome, {profile.firstName}!
         </Text>
         <Text style={styles.role}>
-          {profile.role.charAt(0).toUpperCase() + profile.role.slice(1)}
+          {titleCase(profile.role)}
         </Text>
       </View>
 
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Wallet Balance</Text>
         <Text style={styles.balance}>
-          ${profile.walletBalance.toFixed(2)}
+          {formatCurrency(walletBalance)}
         </Text>
       </View>
 
@@ -58,7 +65,7 @@ const HomeScreen: React.FC = () => {
         <Text style={styles.cardTitle}>Profile Stats</Text>
         <View style={styles.stat}>
           <Text style={styles.statLabel}>Rating</Text>
-          <Text style={styles.statValue}>{profile.rating.toFixed(1)} ⭐</Text>
+          <Text style={styles.statValue}>{rating.toFixed(1)} stars</Text>
         </View>
         <View style={styles.stat}>
           <Text style={styles.statLabel}>Jobs Completed</Text>

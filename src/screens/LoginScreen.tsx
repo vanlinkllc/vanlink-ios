@@ -73,6 +73,7 @@ const LoginScreen: React.FC<Props> = ({ navigation, route }) => {
               value={email}
               onChangeText={setEmail}
               keyboardType="email-address"
+              autoCapitalize="none"
               editable={!loading}
             />
           </View>
@@ -94,6 +95,15 @@ const LoginScreen: React.FC<Props> = ({ navigation, route }) => {
             loading={loading}
             disabled={loading}
           />
+
+          <TouchableOpacity
+            style={styles.forgotButton}
+            activeOpacity={0.7}
+            onPress={() => navigation.navigate('ForgotPassword', { role })}
+            disabled={loading}
+          >
+            <Text style={styles.forgotButtonText}>Forgot password?</Text>
+          </TouchableOpacity>
 
           <View style={styles.divider} />
 
@@ -167,6 +177,15 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: '#e5e7eb',
     marginVertical: 20,
+  },
+  forgotButton: {
+    alignItems: 'center',
+    paddingVertical: 4,
+  },
+  forgotButtonText: {
+    color: '#374151',
+    fontSize: 14,
+    fontWeight: '700',
   },
   signupPrompt: {
     fontSize: 14,
