@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { NavigationContainer } from '@react-navigation/native';
+import { LinkingOptions, NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -27,7 +27,13 @@ import type {
   DriverTabParamList,
 } from '@/types/navigation';
 
-const RootStack = createNativeStackNavigator();
+type RootStackParamList = {
+  DriverNavigator: undefined;
+  CustomerNavigator: undefined;
+  Auth: undefined;
+};
+
+const RootStack = createNativeStackNavigator<RootStackParamList>();
 const AuthStack = createNativeStackNavigator<AuthStackParamList>();
 const CustomerStack = createNativeStackNavigator<CustomerStackParamList>();
 const DriverStack = createNativeStackNavigator<DriverStackParamList>();
@@ -163,6 +169,25 @@ const AuthNavigator = () => (
   </AuthStack.Navigator>
 );
 
+const linking: LinkingOptions<RootStackParamList> = {
+  prefixes: ['vanlink://'],
+  config: {
+    screens: {
+      Auth: {
+        screens: {
+          ResetPassword: 'reset-password/:token',
+          ForgotPassword: 'forgot-password',
+          Login: 'login',
+          Signup: 'signup',
+          Landing: '',
+        },
+      },
+      CustomerNavigator: 'customer',
+      DriverNavigator: 'driver',
+    },
+  },
+};
+
 const App: React.FC = () => {
   const { token, profile, initialized, init } = useAuth();
   const isDriver = profile?.role === 'driver';
@@ -180,7 +205,7 @@ const App: React.FC = () => {
   }
 
   return (
-    <NavigationContainer>
+    <NavigationContainer linking={linking}>
       <RootStack.Navigator
         screenOptions={{
           headerShown: true,

@@ -15,15 +15,21 @@ const BookDeliveryScreen: React.FC<Props> = ({ navigation }) => {
   const [itemValue, setItemValue] = useState('');
   const [budget, setBudget] = useState('');
   const [helpersRequired, setHelpersRequired] = useState('0');
+  const [pricingModel, setPricingModel] = useState<'fixed' | 'bid'>('fixed');
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async () => {
     const parsedBudget = Number(budget);
-    const parsedValue = Number(itemValue || 0);
+    const parsedValue = Number(itemValue);
     const parsedHelpers = Number(helpersRequired || 0);
 
     if (!pickupAddress.trim() || !dropoffAddress.trim() || !itemDescription.trim()) {
       Alert.alert('Missing details', 'Pickup, dropoff, and item details are required.');
+      return;
+    }
+
+    if (!Number.isFinite(parsedValue) || parsedValue < 0) {
+      Alert.alert('Invalid item value', 'Enter a valid item value. Use 0 only if the item has no declared value.');
       return;
     }
 
@@ -38,9 +44,9 @@ const BookDeliveryScreen: React.FC<Props> = ({ navigation }) => {
         pickupAddress: pickupAddress.trim(),
         dropoffAddress: dropoffAddress.trim(),
         itemDescription: itemDescription.trim(),
-        itemValue: Number.isFinite(parsedValue) ? parsedValue : 0,
+        itemValue: parsedValue,
         budget: parsedBudget,
-        pricingModel: 'fixed',
+        pricingModel,
         helpersRequired: Number.isFinite(parsedHelpers) ? parsedHelpers : 0,
       });
       Alert.alert('Delivery booked', 'Your delivery has been submitted.', [
@@ -100,6 +106,25 @@ const BookDeliveryScreen: React.FC<Props> = ({ navigation }) => {
             />
           </View>
           <View style={styles.formGroup}>
+            <Text style={styles.label}>Pricing model</Text>
+            <View style={styles.segment}>
+              <Button
+                title="Fixed"
+                onPress={() => setPricingModel('fixed')}
+                variant={pricingModel === 'fixed' ? 'primary' : 'secondary'}
+                style={styles.segmentButton}
+                disabled={loading}
+              />
+              <Button
+                title="Bid"
+                onPress={() => setPricingModel('bid')}
+                variant={pricingModel === 'bid' ? 'primary' : 'secondary'}
+                style={styles.segmentButton}
+                disabled={loading}
+              />
+            </View>
+          </View>
+          <View style={styles.formGroup}>
             <Text style={styles.label}>Helpers required</Text>
             <TextInput
               value={helpersRequired}
@@ -138,6 +163,13 @@ const styles = StyleSheet.create({
     color: '#111827',
     fontSize: 14,
     fontWeight: '700',
+  },
+  segment: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  segmentButton: {
+    flex: 1,
   },
 });
 

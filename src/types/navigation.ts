@@ -7,7 +7,7 @@ export type AuthStackParamList = {
   Login: { role: AuthRole };
   Signup: { role: AuthRole };
   ForgotPassword: { role: AuthRole };
-  ResetPassword: { role: AuthRole; email?: string };
+  ResetPassword: { role?: AuthRole; email?: string; token?: string };
 };
 
 export type CustomerStackParamList = {

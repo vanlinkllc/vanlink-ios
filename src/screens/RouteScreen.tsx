@@ -3,7 +3,8 @@ import { Alert, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-n
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Button } from '@/components/Button';
 import { StateView } from '@/components/StateView';
-import { completeJob, fetchJob, type Job } from '@/lib/api';
+import { completeJob, fetchJob, updateJobLocation, type Job } from '@/lib/api';
+import { getCurrentDriverCoordinates } from '@/lib/location';
 import type { DriverStackParamList } from '@/types/navigation';
 import { formatDateTime, titleCase } from '@/utils/format';
 
@@ -13,6 +14,7 @@ const RouteScreen: React.FC<Props> = ({ navigation, route }) => {
   const [job, setJob] = useState<Job | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [locationLoading, setLocationLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
@@ -50,6 +52,29 @@ const RouteScreen: React.FC<Props> = ({ navigation, route }) => {
     }
   };
 
+  const handleShareLocation = async () => {
+    if (!job) return;
+    setLocationLoading(true);
+    try {
+      const coords = await getCurrentDriverCoordinates();
+      const updatedJob = await updateJobLocation(
+        job.id,
+        coords.latitude,
+        coords.longitude,
+        job.navPhase
+      );
+      setJob(updatedJob);
+      Alert.alert('Location updated', 'Your current driver location was sent to VanLink.');
+    } catch (locationError) {
+      Alert.alert(
+        'Location unavailable',
+        locationError instanceof Error ? locationError.message : 'Unable to update your location.'
+      );
+    } finally {
+      setLocationLoading(false);
+    }
+  };
+
   if (loading) return <StateView title="Loading route" loading />;
   if (error) return <StateView title="Could not load route" message={error} actionLabel="Retry" onAction={load} />;
   if (!job) return <StateView title="Route unavailable" message="The backend did not return this job." />;
@@ -70,16 +95,23 @@ const RouteScreen: React.FC<Props> = ({ navigation, route }) => {
 
         <View style={styles.actions}>
           <Button
+            title={locationLoading ? 'Updating location...' : 'Share current location'}
+            onPress={handleShareLocation}
+            loading={locationLoading}
+            disabled={submitting || locationLoading}
+            variant="secondary"
+          />
+          <Button
             title={submitting ? 'Completing...' : 'Mark complete'}
             onPress={handleComplete}
             loading={submitting}
-            disabled={submitting}
+            disabled={submitting || locationLoading}
           />
           <Button
             title="Job details"
             onPress={() => navigation.navigate('JobDetails', { jobId: job.id, mode: 'driver' })}
             variant="secondary"
-            disabled={submitting}
+            disabled={submitting || locationLoading}
           />
         </View>
       </ScrollView>

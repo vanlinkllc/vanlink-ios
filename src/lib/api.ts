@@ -43,6 +43,11 @@ export interface Job {
   updatedAt: string;
   customer?: Profile;
   driver?: Profile;
+  bids?: Bid[];
+  driverLat?: number;
+  driverLng?: number;
+  navPhase?: string;
+  paymentStatus?: string;
 }
 
 export interface Bid {
@@ -80,6 +85,16 @@ export interface CreateJobInput {
   scheduledTime?: string;
 }
 
+export interface DriverLocationParams {
+  driverLat: number;
+  driverLng: number;
+}
+
+export interface ForgotPasswordResponse {
+  message: string;
+  resetToken?: string;
+}
+
 // Auth endpoints
 export async function signUp(data: Record<string, unknown>): Promise<{
   accessToken: string;
@@ -115,8 +130,8 @@ export async function signOut(): Promise<void> {
   clearToken();
 }
 
-export async function forgotPassword(email: string): Promise<void> {
-  await api<void>('/auth/forgot-password', {
+export async function forgotPassword(email: string): Promise<ForgotPasswordResponse> {
+  return api<ForgotPasswordResponse>('/auth/forgot-password', {
     method: 'POST',
     data: { email },
   });
@@ -162,11 +177,10 @@ export async function fetchJobsForDriver(): Promise<Job[]> {
 }
 
 export async function fetchAvailableJobs(
-  driverLat = 53.3498,
-  driverLng = -6.2603
+  location: DriverLocationParams
 ): Promise<Job[]> {
   return api<Job[]>('/jobs/available', {
-    params: { driverLat, driverLng },
+    params: location,
   });
 }
 
@@ -180,13 +194,25 @@ export async function fetchJob(jobId: string): Promise<Job> {
   return api<Job>(`/jobs/${jobId}`);
 }
 
-export async function fetchActiveDriverJobs(): Promise<Job[]> {
-  return api<Job[]>('/jobs/my/active');
+export async function fetchActiveDriverJob(): Promise<Job | null> {
+  return api<Job | null>('/jobs/my/active');
 }
 
 export async function completeJob(jobId: string): Promise<Job> {
   return api<Job>(`/jobs/${jobId}/complete`, {
     method: 'POST',
+  });
+}
+
+export async function updateJobLocation(
+  jobId: string,
+  lat: number,
+  lng: number,
+  navPhase?: string
+): Promise<Job> {
+  return api<Job>(`/jobs/${jobId}/location`, {
+    method: 'POST',
+    data: { lat, lng, navPhase },
   });
 }
 

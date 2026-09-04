@@ -3,13 +3,13 @@ import { RefreshControl, SafeAreaView, ScrollView, StyleSheet, View } from 'reac
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { JobCard } from '@/components/JobCard';
 import { StateView } from '@/components/StateView';
-import { fetchActiveDriverJobs, type Job } from '@/lib/api';
+import { fetchActiveDriverJob, type Job } from '@/lib/api';
 import type { DriverStackParamList } from '@/types/navigation';
 
 type Props = NativeStackScreenProps<DriverStackParamList, 'ActiveJob'>;
 
 const ActiveJobScreen: React.FC<Props> = ({ navigation }) => {
-  const [jobs, setJobs] = useState<Job[]>([]);
+  const [job, setJob] = useState<Job | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -17,8 +17,8 @@ const ActiveJobScreen: React.FC<Props> = ({ navigation }) => {
   const load = useCallback(async () => {
     try {
       setError(null);
-      const activeJobs = await fetchActiveDriverJobs();
-      setJobs(Array.isArray(activeJobs) ? activeJobs : []);
+      const activeJob = await fetchActiveDriverJob();
+      setJob(activeJob);
     } catch (loadError) {
       setError(loadError instanceof Error ? loadError.message : 'Unable to load active job.');
     } finally {
@@ -33,7 +33,7 @@ const ActiveJobScreen: React.FC<Props> = ({ navigation }) => {
 
   if (loading) return <StateView title="Loading active job" loading />;
   if (error) return <StateView title="Could not load active job" message={error} actionLabel="Retry" onAction={load} />;
-  if (jobs.length === 0) {
+  if (!job) {
     return <StateView title="No active job" message="Accept a job to see route details here." actionLabel="Find jobs" onAction={() => navigation.navigate('DriverJobs', { list: 'available' })} />;
   }
 
@@ -52,9 +52,7 @@ const ActiveJobScreen: React.FC<Props> = ({ navigation }) => {
         }
       >
         <View style={styles.list}>
-          {jobs.map(job => (
-            <JobCard key={job.id} job={job} onPress={() => navigation.navigate('Route', { jobId: job.id })} />
-          ))}
+          <JobCard job={job} onPress={() => navigation.navigate('Route', { jobId: job.id })} />
         </View>
       </ScrollView>
     </SafeAreaView>

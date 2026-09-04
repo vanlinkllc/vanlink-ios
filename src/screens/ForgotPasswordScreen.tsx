@@ -30,15 +30,22 @@ const ForgotPasswordScreen: React.FC<Props> = ({ navigation, route }) => {
 
     setLoading(true);
     try {
-      await forgotPassword(trimmedEmail);
+      const response = await forgotPassword(trimmedEmail);
+      const resetToken = response.resetToken;
       Alert.alert(
         'Check your email',
-        'If the account exists, VanLink will send a reset token or link.',
+        resetToken
+          ? 'The current backend returned a reset token directly. Continue to set a new password.'
+          : response.message,
         [
           {
-            text: 'Enter token',
+            text: resetToken ? 'Continue' : 'Enter token',
             onPress: () =>
-              navigation.navigate('ResetPassword', { role, email: trimmedEmail }),
+              navigation.navigate('ResetPassword', {
+                role,
+                email: trimmedEmail,
+                token: resetToken,
+              }),
           },
           {
             text: 'Back to login',

@@ -16,7 +16,10 @@
     ],
     "ios": {
       "supportsTabletMode": true,
-      "bundleIdentifier": "com.vanlinkllc.mobile"
+      "bundleIdentifier": "com.vanlinkllc.mobile",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "VanLink uses your location to show driver jobs near your current position."
+      }
     },
     "android": {
       "adaptiveIcon": {

@@ -12,7 +12,7 @@ import { Button } from '@/components/Button';
 import { JobCard } from '@/components/JobCard';
 import { StateView } from '@/components/StateView';
 import { useAuth } from '@/hooks/useAuth';
-import { fetchActiveDriverJobs, fetchAvailableJobs, type Job } from '@/lib/api';
+import { fetchActiveDriverJob, type Job } from '@/lib/api';
 import type { DriverStackParamList } from '@/types/navigation';
 import { formatCurrency } from '@/utils/format';
 
@@ -20,8 +20,7 @@ type Props = NativeStackScreenProps<DriverStackParamList, 'DriverHome'>;
 
 const DriverHomeScreen: React.FC<Props> = ({ navigation }) => {
   const { profile, refreshProfile } = useAuth();
-  const [availableJobs, setAvailableJobs] = useState<Job[]>([]);
-  const [activeJobs, setActiveJobs] = useState<Job[]>([]);
+  const [activeJob, setActiveJob] = useState<Job | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -30,12 +29,8 @@ const DriverHomeScreen: React.FC<Props> = ({ navigation }) => {
     try {
       setError(null);
       await refreshProfile();
-      const [available, active] = await Promise.all([
-        fetchAvailableJobs(),
-        fetchActiveDriverJobs(),
-      ]);
-      setAvailableJobs(Array.isArray(available) ? available : []);
-      setActiveJobs(Array.isArray(active) ? active : []);
+      const active = await fetchActiveDriverJob();
+      setActiveJob(active);
     } catch (loadError) {
       setError(loadError instanceof Error ? loadError.message : 'Unable to load driver data.');
     } finally {
@@ -50,8 +45,6 @@ const DriverHomeScreen: React.FC<Props> = ({ navigation }) => {
 
   if (loading) return <StateView title="Loading driver home" loading />;
   if (error) return <StateView title="Could not load home" message={error} actionLabel="Retry" onAction={load} />;
-
-  const activeJob = activeJobs[0];
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -102,21 +95,19 @@ const DriverHomeScreen: React.FC<Props> = ({ navigation }) => {
           </View>
         )}
 
-        <Text style={styles.sectionTitle}>Nearby opportunities</Text>
-        {availableJobs.length === 0 ? (
-          <View style={styles.emptyCard}>
-            <Text style={styles.emptyTitle}>No available jobs</Text>
-            <Text style={styles.emptyText}>Pull to refresh or check back later.</Text>
-          </View>
-        ) : (
-          availableJobs.slice(0, 3).map(job => (
-            <JobCard
-              key={job.id}
-              job={job}
-              onPress={() => navigation.navigate('JobDetails', { jobId: job.id, mode: 'driver' })}
-            />
-          ))
-        )}
+        <Text style={styles.sectionTitle}>Available jobs</Text>
+        <View style={styles.emptyCard}>
+          <Text style={styles.emptyTitle}>Use your current location</Text>
+          <Text style={styles.emptyText}>
+            Browse jobs requests your iPhone location and sends those coordinates
+            to the VanLink backend for matching.
+          </Text>
+          <Button
+            title="Browse available jobs"
+            onPress={() => navigation.navigate('DriverJobs', { list: 'available' })}
+            variant="secondary"
+          />
+        </View>
       </ScrollView>
     </SafeAreaView>
   );

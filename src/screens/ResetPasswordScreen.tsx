@@ -17,10 +17,10 @@ import type { AuthStackParamList } from '@/types/navigation';
 type Props = NativeStackScreenProps<AuthStackParamList, 'ResetPassword'>;
 
 const ResetPasswordScreen: React.FC<Props> = ({ navigation, route }) => {
-  const [token, setToken] = useState('');
+  const [token, setToken] = useState(route.params.token ?? '');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const role = route.params.role;
+  const role = route.params.role ?? 'customer';
 
   const handleSubmit = async () => {
     if (!token.trim() || password.length < 6) {

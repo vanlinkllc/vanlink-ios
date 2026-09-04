@@ -5,6 +5,7 @@ import { Button } from '@/components/Button';
 import { JobCard } from '@/components/JobCard';
 import { StateView } from '@/components/StateView';
 import { fetchAvailableJobs, fetchJobsForDriver, type Job } from '@/lib/api';
+import { getCurrentDriverCoordinates } from '@/lib/location';
 import type { DriverStackParamList } from '@/types/navigation';
 
 type Props = NativeStackScreenProps<DriverStackParamList, 'DriverJobs'>;
@@ -19,7 +20,15 @@ const DriverJobsScreen: React.FC<Props> = ({ navigation, route }) => {
   const load = useCallback(async () => {
     try {
       setError(null);
-      const loadedJobs = list === 'available' ? await fetchAvailableJobs() : await fetchJobsForDriver();
+      const loadedJobs =
+        list === 'available'
+          ? await getCurrentDriverCoordinates().then(coords =>
+              fetchAvailableJobs({
+                driverLat: coords.latitude,
+                driverLng: coords.longitude,
+              })
+            )
+          : await fetchJobsForDriver();
       setJobs(Array.isArray(loadedJobs) ? loadedJobs : []);
     } catch (loadError) {
       setError(loadError instanceof Error ? loadError.message : 'Unable to load jobs.');

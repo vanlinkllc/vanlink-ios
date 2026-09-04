@@ -84,7 +84,7 @@ export async function api<T>(
   options: {
     method?: string;
     data?: unknown;
-    params?: Record<string, string | number | boolean | undefined>;
+    params?: object;
   } = {}
 ): Promise<T> {
   try {
