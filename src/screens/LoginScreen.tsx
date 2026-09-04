@@ -5,16 +5,24 @@ import {
   Text,
   ScrollView,
   Alert,
+  SafeAreaView,
+  TouchableOpacity,
 } from 'react-native';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useAuth } from '@/hooks/useAuth';
 import { TextInput } from '@/components/TextInput';
 import { Button } from '@/components/Button';
+import type { AuthStackParamList } from '@/types/navigation';
 
-const LoginScreen: React.FC = () => {
+type Props = NativeStackScreenProps<AuthStackParamList, 'Login'>;
+
+const LoginScreen: React.FC<Props> = ({ navigation, route }) => {
+  const role = route.params.role;
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const { signIn } = useAuth();
+  const roleLabel = role === 'driver' ? 'Driver' : 'Customer';
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -23,19 +31,39 @@ const LoginScreen: React.FC = () => {
     }
 
     setLoading(true);
-    const { error } = await signIn(email, password);
+    const { error, role: backendRole } = await signIn(email.trim(), password);
     setLoading(false);
 
     if (error) {
       Alert.alert('Login Failed', error);
+      return;
+    }
+
+    if (backendRole !== role) {
+      Alert.alert(
+        'Account type mismatch',
+        `Signed in as ${backendRole}. VanLink will open your correct account area.`
+      );
     }
   };
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.content}>
-        <Text style={styles.title}>VanLink</Text>
-        <Text style={styles.subtitle}>Logistics Made Easy</Text>
+    <SafeAreaView style={styles.safeArea}>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={styles.content}
+        keyboardShouldPersistTaps="handled"
+      >
+        <TouchableOpacity
+          style={styles.backButton}
+          activeOpacity={0.7}
+          onPress={() => navigation.goBack()}
+        >
+          <Text style={styles.backButtonText}>Back</Text>
+        </TouchableOpacity>
+
+        <Text style={styles.title}>{roleLabel} login</Text>
+        <Text style={styles.subtitle}>Sign in to continue with VanLink</Text>
 
         <View style={styles.form}>
           <View style={styles.formGroup}>
@@ -70,15 +98,28 @@ const LoginScreen: React.FC = () => {
           <View style={styles.divider} />
 
           <Text style={styles.signupPrompt}>
-            Don't have an account? Create one to get started
+            Don't have an account?
           </Text>
+          <TouchableOpacity
+            style={styles.signupButton}
+            activeOpacity={0.7}
+            onPress={() => navigation.navigate('Signup', { role })}
+          >
+            <Text style={styles.signupButtonText}>
+              Create {roleLabel.toLowerCase()} account
+            </Text>
+          </TouchableOpacity>
         </View>
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
   container: {
     flex: 1,
     backgroundColor: '#fff',
@@ -86,21 +127,30 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     paddingHorizontal: 20,
-    paddingTop: 60,
+    paddingTop: 20,
     paddingBottom: 40,
+  },
+  backButton: {
+    alignSelf: 'flex-start',
+    paddingVertical: 8,
+    paddingRight: 12,
+    marginBottom: 24,
+  },
+  backButtonText: {
+    color: '#374151',
+    fontSize: 15,
+    fontWeight: '700',
   },
   title: {
     fontSize: 32,
-    fontWeight: 'bold',
+    fontWeight: '800',
     color: '#1f2937',
     marginBottom: 8,
-    textAlign: 'center',
   },
   subtitle: {
     fontSize: 16,
     color: '#6b7280',
     marginBottom: 40,
-    textAlign: 'center',
   },
   form: {
     gap: 20,
@@ -122,6 +172,15 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#6b7280',
     textAlign: 'center',
+  },
+  signupButton: {
+    alignItems: 'center',
+    paddingVertical: 8,
+  },
+  signupButtonText: {
+    color: '#1f2937',
+    fontSize: 14,
+    fontWeight: '700',
   },
 });
 

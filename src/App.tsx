@@ -7,11 +7,15 @@ import { useAuth } from '@/hooks/useAuth';
 import LoginScreen from '@/screens/LoginScreen';
 import HomeScreen from '@/screens/HomeScreen';
 import AccountScreen from '@/screens/AccountScreen';
+import LandingScreen from '@/screens/LandingScreen';
+import SignupScreen from '@/screens/SignupScreen';
+import type { AuthStackParamList } from '@/types/navigation';
 
-const Stack = createNativeStackNavigator();
+const RootStack = createNativeStackNavigator();
+const AuthStack = createNativeStackNavigator<AuthStackParamList>();
 const Tab = createBottomTabNavigator();
 
-const HomeNavigator = () => (
+const CustomerNavigator = () => (
   <Tab.Navigator
     screenOptions={{
       headerShown: true,
@@ -23,7 +27,7 @@ const HomeNavigator = () => (
       name="Home"
       component={HomeScreen}
       options={{
-        title: 'VanLink',
+        title: 'Customer Home',
         tabBarLabel: 'Home',
       }}
     />
@@ -38,8 +42,48 @@ const HomeNavigator = () => (
   </Tab.Navigator>
 );
 
+const DriverNavigator = () => (
+  <Tab.Navigator
+    screenOptions={{
+      headerShown: true,
+      tabBarActiveTintColor: '#1f2937',
+      tabBarInactiveTintColor: '#9ca3af',
+    }}
+  >
+    <Tab.Screen
+      name="Home"
+      component={HomeScreen}
+      options={{
+        title: 'Driver Home',
+        tabBarLabel: 'Home',
+      }}
+    />
+    <Tab.Screen
+      name="Account"
+      component={AccountScreen}
+      options={{
+        title: 'Account',
+        tabBarLabel: 'Account',
+      }}
+    />
+  </Tab.Navigator>
+);
+
+const AuthNavigator = () => (
+  <AuthStack.Navigator
+    screenOptions={{
+      headerShown: false,
+    }}
+  >
+    <AuthStack.Screen name="Landing" component={LandingScreen} />
+    <AuthStack.Screen name="Login" component={LoginScreen} />
+    <AuthStack.Screen name="Signup" component={SignupScreen} />
+  </AuthStack.Navigator>
+);
+
 const App: React.FC = () => {
-  const { token, initialized, init } = useAuth();
+  const { token, profile, initialized, init } = useAuth();
+  const isDriver = profile?.role === 'driver';
 
   useEffect(() => {
     init();
@@ -55,25 +99,31 @@ const App: React.FC = () => {
 
   return (
     <NavigationContainer>
-      <Stack.Navigator
+      <RootStack.Navigator
         screenOptions={{
           headerShown: true,
         }}
       >
-        {token ? (
-          <Stack.Screen
-            name="Main"
-            component={HomeNavigator}
+        {token && isDriver ? (
+          <RootStack.Screen
+            name="DriverNavigator"
+            component={DriverNavigator}
+            options={{ headerShown: false }}
+          />
+        ) : token && profile ? (
+          <RootStack.Screen
+            name="CustomerNavigator"
+            component={CustomerNavigator}
             options={{ headerShown: false }}
           />
         ) : (
-          <Stack.Screen
+          <RootStack.Screen
             name="Auth"
-            component={LoginScreen}
+            component={AuthNavigator}
             options={{ headerShown: false }}
           />
         )}
-      </Stack.Navigator>
+      </RootStack.Navigator>
     </NavigationContainer>
   );
 };
