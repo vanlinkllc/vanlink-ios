@@ -22,6 +22,15 @@ const ResetPasswordScreen: React.FC<Props> = ({ navigation, route }) => {
   const [loading, setLoading] = useState(false);
   const role = route.params.role ?? 'customer';
 
+  const returnToLogin = () => {
+    if (navigation.canGoBack()) {
+      navigation.goBack();
+      return;
+    }
+
+    navigation.navigate('Login', { role });
+  };
+
   const handleSubmit = async () => {
     if (!token.trim() || password.length < 6) {
       Alert.alert(
@@ -53,9 +62,9 @@ const ResetPasswordScreen: React.FC<Props> = ({ navigation, route }) => {
         <TouchableOpacity
           style={styles.backButton}
           activeOpacity={0.7}
-          onPress={() => navigation.goBack()}
+          onPress={returnToLogin}
         >
-          <Text style={styles.backButtonText}>Back</Text>
+          <Text style={styles.backButtonText}>Back to login</Text>
         </TouchableOpacity>
 
         <Text style={styles.title}>Enter reset token</Text>
