@@ -85,6 +85,10 @@ const RouteScreen: React.FC<Props> = ({ navigation, route }) => {
         <View style={styles.card}>
           <Text style={styles.status}>{titleCase(job.status)}</Text>
           <Text style={styles.title}>Route</Text>
+          <Text style={styles.blockedText}>
+            Map routing and distance guidance are blocked until VanLink backend
+            exposes Google route endpoints. Location updates still go through the backend.
+          </Text>
           <Text style={styles.label}>Pickup</Text>
           <Text style={styles.address}>{job.pickupAddress || 'Missing pickup address'}</Text>
           <Text style={styles.label}>Dropoff</Text>
@@ -156,6 +160,11 @@ const styles = StyleSheet.create({
     color: '#111827',
     fontSize: 16,
     lineHeight: 22,
+  },
+  blockedText: {
+    color: '#92400e',
+    fontSize: 13,
+    lineHeight: 19,
   },
   actions: {
     gap: 12,

@@ -31,20 +31,16 @@ const ForgotPasswordScreen: React.FC<Props> = ({ navigation, route }) => {
     setLoading(true);
     try {
       const response = await forgotPassword(trimmedEmail);
-      const resetToken = response.resetToken;
       Alert.alert(
         'Check your email',
-        resetToken
-          ? 'The current backend returned a reset token directly. Continue to set a new password.'
-          : response.message,
+        response.message,
         [
           {
-            text: resetToken ? 'Continue' : 'Enter token',
+            text: 'Enter token',
             onPress: () =>
               navigation.navigate('ResetPassword', {
                 role,
                 email: trimmedEmail,
-                token: resetToken,
               }),
           },
           {
@@ -76,8 +72,7 @@ const ForgotPasswordScreen: React.FC<Props> = ({ navigation, route }) => {
 
         <Text style={styles.title}>Reset password</Text>
         <Text style={styles.subtitle}>
-          Enter your email. The backend supports requesting a reset and then
-          submitting the token with a new password.
+          Enter your email. VanLink will send a reset link from the backend.
         </Text>
 
         <View style={styles.form}>

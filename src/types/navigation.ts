@@ -27,10 +27,14 @@ export type DriverStackParamList = {
 
 export type CustomerTabParamList = {
   CustomerWork: NavigatorScreenParams<CustomerStackParamList>;
+  Wallet: undefined;
+  Notifications: undefined;
   Account: undefined;
 };
 
 export type DriverTabParamList = {
   DriverWork: NavigatorScreenParams<DriverStackParamList>;
+  Wallet: undefined;
+  Notifications: undefined;
   Account: undefined;
 };

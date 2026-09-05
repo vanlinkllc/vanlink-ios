@@ -4,7 +4,9 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { ActivityIndicator, View } from 'react-native';
+import { StripeProvider } from '@stripe/stripe-react-native';
 import { useAuth } from '@/hooks/useAuth';
+import { STRIPE_PUBLISHABLE_KEY } from '@/lib/stripe';
 import LoginScreen from '@/screens/LoginScreen';
 import AccountScreen from '@/screens/AccountScreen';
 import LandingScreen from '@/screens/LandingScreen';
@@ -14,6 +16,8 @@ import ResetPasswordScreen from '@/screens/ResetPasswordScreen';
 import CustomerHomeScreen from '@/screens/CustomerHomeScreen';
 import BookDeliveryScreen from '@/screens/BookDeliveryScreen';
 import DeliveriesListScreen from '@/screens/DeliveriesListScreen';
+import NotificationsScreen from '@/screens/NotificationsScreen';
+import WalletScreen from '@/screens/WalletScreen';
 import DriverHomeScreen from '@/screens/DriverHomeScreen';
 import DriverJobsScreen from '@/screens/DriverJobsScreen';
 import JobDetailsScreen from '@/screens/JobDetailsScreen';
@@ -126,6 +130,22 @@ const CustomerNavigator = () => (
         tabBarLabel: 'Account',
       }}
     />
+    <CustomerTab.Screen
+      name="Wallet"
+      component={WalletScreen}
+      options={{
+        title: 'Wallet',
+        tabBarLabel: 'Wallet',
+      }}
+    />
+    <CustomerTab.Screen
+      name="Notifications"
+      component={NotificationsScreen}
+      options={{
+        title: 'Notifications',
+        tabBarLabel: 'Alerts',
+      }}
+    />
   </CustomerTab.Navigator>
 );
 
@@ -152,6 +172,22 @@ const DriverNavigator = () => (
         tabBarLabel: 'Account',
       }}
     />
+    <DriverTab.Screen
+      name="Wallet"
+      component={WalletScreen}
+      options={{
+        title: 'Wallet',
+        tabBarLabel: 'Wallet',
+      }}
+    />
+    <DriverTab.Screen
+      name="Notifications"
+      component={NotificationsScreen}
+      options={{
+        title: 'Notifications',
+        tabBarLabel: 'Alerts',
+      }}
+    />
   </DriverTab.Navigator>
 );
 
@@ -170,12 +206,17 @@ const AuthNavigator = () => (
 );
 
 const linking: LinkingOptions<RootStackParamList> = {
-  prefixes: ['vanlink://'],
+  prefixes: ['vanlink://', 'https://vanlink.app', 'https://www.vanlink.app'],
   config: {
     screens: {
       Auth: {
         screens: {
-          ResetPassword: 'reset-password/:token',
+          ResetPassword: {
+            path: 'reset-password/:token?',
+            parse: {
+              token: (token: string) => token,
+            },
+          },
           ForgotPassword: 'forgot-password',
           Login: 'login',
           Signup: 'signup',
@@ -205,33 +246,35 @@ const App: React.FC = () => {
   }
 
   return (
-    <NavigationContainer linking={linking}>
-      <RootStack.Navigator
-        screenOptions={{
-          headerShown: true,
-        }}
-      >
-        {token && isDriver ? (
-          <RootStack.Screen
-            name="DriverNavigator"
-            component={DriverNavigator}
-            options={{ headerShown: false }}
-          />
-        ) : token && profile ? (
-          <RootStack.Screen
-            name="CustomerNavigator"
-            component={CustomerNavigator}
-            options={{ headerShown: false }}
-          />
-        ) : (
-          <RootStack.Screen
-            name="Auth"
-            component={AuthNavigator}
-            options={{ headerShown: false }}
-          />
-        )}
-      </RootStack.Navigator>
-    </NavigationContainer>
+    <StripeProvider publishableKey={STRIPE_PUBLISHABLE_KEY} urlScheme="vanlink">
+      <NavigationContainer linking={linking}>
+        <RootStack.Navigator
+          screenOptions={{
+            headerShown: true,
+          }}
+        >
+          {token && isDriver ? (
+            <RootStack.Screen
+              name="DriverNavigator"
+              component={DriverNavigator}
+              options={{ headerShown: false }}
+            />
+          ) : token && profile ? (
+            <RootStack.Screen
+              name="CustomerNavigator"
+              component={CustomerNavigator}
+              options={{ headerShown: false }}
+            />
+          ) : (
+            <RootStack.Screen
+              name="Auth"
+              component={AuthNavigator}
+              options={{ headerShown: false }}
+            />
+          )}
+        </RootStack.Navigator>
+      </NavigationContainer>
+    </StripeProvider>
   );
 };
 

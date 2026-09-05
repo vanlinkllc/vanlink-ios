@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
 import { Alert, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { useStripe } from '@stripe/stripe-react-native';
 import { Button } from '@/components/Button';
 import { TextInput } from '@/components/TextInput';
-import { createJob } from '@/lib/api';
+import { useAuth } from '@/hooks/useAuth';
+import { confirmJobPayment, createJob, createJobPaymentIntent } from '@/lib/api';
+import { requireStripePublishableKey, STRIPE_PUBLISHABLE_KEY } from '@/lib/stripe';
 import type { CustomerStackParamList } from '@/types/navigation';
 
 type Props = NativeStackScreenProps<CustomerStackParamList, 'BookDelivery'>;
@@ -17,6 +20,8 @@ const BookDeliveryScreen: React.FC<Props> = ({ navigation }) => {
   const [helpersRequired, setHelpersRequired] = useState('0');
   const [pricingModel, setPricingModel] = useState<'fixed' | 'bid'>('fixed');
   const [loading, setLoading] = useState(false);
+  const { initPaymentSheet, presentPaymentSheet } = useStripe();
+  const { profile } = useAuth();
 
   const handleSubmit = async () => {
     const parsedBudget = Number(budget);
@@ -40,6 +45,38 @@ const BookDeliveryScreen: React.FC<Props> = ({ navigation }) => {
 
     setLoading(true);
     try {
+      if (!STRIPE_PUBLISHABLE_KEY && (profile?.walletBalance ?? 0) < parsedBudget) {
+        throw new Error(
+          'Stripe publishable key is not configured. Set EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY before taking card payments.'
+        );
+      }
+
+      const paymentIntent = await createJobPaymentIntent(
+        parsedBudget,
+        itemDescription.trim()
+      );
+
+      if (!paymentIntent.walletOnly) {
+        requireStripePublishableKey();
+        if (!paymentIntent.clientSecret || !paymentIntent.paymentIntentId) {
+          throw new Error('The backend did not return a Stripe client secret.');
+        }
+
+        const initResult = await initPaymentSheet({
+          merchantDisplayName: 'VanLink',
+          paymentIntentClientSecret: paymentIntent.clientSecret,
+          returnURL: 'vanlink://stripe-redirect',
+        });
+        if (initResult.error) {
+          throw new Error(initResult.error.message);
+        }
+
+        const paymentResult = await presentPaymentSheet();
+        if (paymentResult.error) {
+          throw new Error(paymentResult.error.message);
+        }
+      }
+
       const job = await createJob({
         pickupAddress: pickupAddress.trim(),
         dropoffAddress: dropoffAddress.trim(),
@@ -48,11 +85,14 @@ const BookDeliveryScreen: React.FC<Props> = ({ navigation }) => {
         budget: parsedBudget,
         pricingModel,
         helpersRequired: Number.isFinite(parsedHelpers) ? parsedHelpers : 0,
+        stripePaymentIntentId: paymentIntent.paymentIntentId ?? undefined,
       });
-      Alert.alert('Delivery booked', 'Your delivery has been submitted.', [
+      const confirmedJob = await confirmJobPayment(job.id, paymentIntent.paymentIntentId);
+      Alert.alert('Delivery booked', 'Your payment was confirmed by the backend.', [
         {
           text: 'View delivery',
-          onPress: () => navigation.replace('JobDetails', { jobId: job.id, mode: 'customer' }),
+          onPress: () =>
+            navigation.replace('JobDetails', { jobId: confirmedJob.id, mode: 'customer' }),
         },
       ]);
     } catch (error) {
@@ -69,6 +109,13 @@ const BookDeliveryScreen: React.FC<Props> = ({ navigation }) => {
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <View style={styles.form}>
+          <View style={styles.blockedCard}>
+            <Text style={styles.blockedTitle}>Google address tools pending</Text>
+            <Text style={styles.blockedText}>
+              Address autocomplete, geocoding, and route distance are blocked until
+              backend-controlled Google endpoints are added. Enter addresses manually.
+            </Text>
+          </View>
           <View style={styles.formGroup}>
             <Text style={styles.label}>Pickup address</Text>
             <TextInput value={pickupAddress} onChangeText={setPickupAddress} editable={!loading} />
@@ -155,6 +202,24 @@ const styles = StyleSheet.create({
   },
   form: {
     gap: 16,
+  },
+  blockedCard: {
+    backgroundColor: '#fffbeb',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#fde68a',
+    padding: 14,
+    gap: 6,
+  },
+  blockedTitle: {
+    color: '#92400e',
+    fontSize: 14,
+    fontWeight: '800',
+  },
+  blockedText: {
+    color: '#92400e',
+    fontSize: 13,
+    lineHeight: 19,
   },
   formGroup: {
     gap: 8,

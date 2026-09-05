@@ -13,6 +13,7 @@ import { Button } from '@/components/Button';
 import { StateView } from '@/components/StateView';
 import {
   acceptJob,
+  confirmJobPayment,
   createBid,
   fetchBidsForJob,
   fetchJob,
@@ -119,6 +120,25 @@ const JobDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
     );
   };
 
+  const handleConfirmWalletPayment = async () => {
+    if (!job) return;
+    setSubmitting(true);
+    try {
+      const confirmed = await confirmJobPayment(job.id, null);
+      setJob(confirmed);
+      Alert.alert('Payment confirmed', 'The backend locked this job using wallet funds.');
+    } catch (paymentError) {
+      Alert.alert(
+        'Payment confirmation failed',
+        paymentError instanceof Error
+          ? paymentError.message
+          : 'Unable to confirm payment for this job.'
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   const openRoute = () => {
     const driverNavigation = navigation as NativeStackNavigationProp<DriverStackParamList>;
     driverNavigation.navigate('Route', { jobId: route.params.jobId });
@@ -176,6 +196,21 @@ const JobDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
                 </Text>
               ))
             )}
+          </View>
+        ) : null}
+
+        {mode === 'customer' && job.paymentStatus === 'pending_stripe' ? (
+          <View style={styles.actions}>
+            <Button
+              title={submitting ? 'Confirming...' : 'Confirm wallet payment'}
+              onPress={handleConfirmWalletPayment}
+              loading={submitting}
+              disabled={submitting}
+            />
+            <Text style={styles.muted}>
+              Card confirmation requires native Stripe PaymentSheet support.
+              Wallet-only confirmation is handled by the backend.
+            </Text>
           </View>
         ) : null}
 
