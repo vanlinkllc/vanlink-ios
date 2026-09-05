@@ -422,6 +422,13 @@ export async function acceptJob(jobId: string): Promise<Job> {
   });
 }
 
+export async function cancelJob(jobId: string, reason: string): Promise<Job> {
+  return api<Job>(`/jobs/${jobId}/cancel`, {
+    method: 'POST',
+    data: { reason },
+  });
+}
+
 export async function fetchJob(jobId: string): Promise<Job> {
   return api<Job>(`/jobs/${jobId}`);
 }

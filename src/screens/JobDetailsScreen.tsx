@@ -217,6 +217,9 @@ const JobDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
           <Text style={styles.status}>{titleCase(job.status)}</Text>
           <Text style={styles.title}>{job.itemDescription || 'Delivery job'}</Text>
           <Text style={styles.price}>{formatCurrency(job.finalPrice ?? job.budget)}</Text>
+          {job.paymentStatus ? (
+            <Text style={styles.value}>Payment {titleCase(job.paymentStatus)}</Text>
+          ) : null}
         </View>
 
         <View style={styles.card}>

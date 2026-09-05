@@ -16,6 +16,9 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onPress }) => (
       </Text>
       <Text style={styles.status}>{titleCase(job.status)}</Text>
     </View>
+    {job.paymentStatus ? (
+      <Text style={styles.paymentStatus}>Payment {titleCase(job.paymentStatus)}</Text>
+    ) : null}
     <Text style={styles.route} numberOfLines={1}>
       To {job.dropoffAddress || 'dropoff address missing'}
     </Text>
@@ -53,6 +56,11 @@ const styles = StyleSheet.create({
     color: '#374151',
     fontSize: 12,
     fontWeight: '800',
+  },
+  paymentStatus: {
+    color: '#6b7280',
+    fontSize: 12,
+    fontWeight: '700',
   },
   route: {
     color: '#4b5563',
