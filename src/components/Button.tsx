@@ -6,6 +6,7 @@ import {
   ActivityIndicator,
   ViewStyle,
 } from 'react-native';
+import { colors, radii } from '@/constants/theme';
 
 interface ButtonProps {
   title: string;
@@ -39,7 +40,7 @@ export const Button: React.FC<ButtonProps> = ({
       activeOpacity={0.7}
     >
       {loading ? (
-        <ActivityIndicator color="white" />
+        <ActivityIndicator color={variant === 'primary' ? colors.primaryText : colors.primary} />
       ) : (
         <Text
           style={[
@@ -57,17 +58,17 @@ export const Button: React.FC<ButtonProps> = ({
 const styles = StyleSheet.create({
   button: {
     height: 48,
-    borderRadius: 8,
+    borderRadius: radii.control,
     justifyContent: 'center',
     alignItems: 'center',
   },
   primary: {
-    backgroundColor: '#1f2937',
+    backgroundColor: colors.primary,
   },
   secondary: {
-    backgroundColor: '#f3f4f6',
+    backgroundColor: colors.subtle,
     borderWidth: 1,
-    borderColor: '#e5e7eb',
+    borderColor: colors.border,
   },
   disabled: {
     opacity: 0.5,
@@ -77,9 +78,9 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   primaryText: {
-    color: 'white',
+    color: colors.primaryText,
   },
   secondaryText: {
-    color: '#1f2937',
+    color: colors.text,
   },
 });

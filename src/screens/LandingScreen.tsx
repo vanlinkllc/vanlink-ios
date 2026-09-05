@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { colors, radii } from '@/constants/theme';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { AuthRole, AuthStackParamList } from '@/types/navigation';
 
@@ -21,12 +22,12 @@ interface RoleAction {
 const actions: RoleAction[] = [
   {
     title: 'Find a van',
-    description: 'Book transport and manage your VanLink jobs.',
+    description: 'Get trusted local transport for furniture, store collections, and single-item moves.',
     role: 'customer',
   },
   {
     title: 'Drive with us',
-    description: 'Sign in or apply to accept VanLink driver jobs.',
+    description: 'Build your driver profile, set your availability, and find better local work.',
     role: 'driver',
   },
 ];
@@ -47,8 +48,11 @@ const LandingScreen: React.FC<Props> = ({ navigation }) => {
         contentContainerStyle={styles.content}
       >
         <View style={styles.header}>
-          <Text style={styles.title}>VanLink</Text>
-          <Text style={styles.subtitle}>Logistics made easy</Text>
+          <Text style={styles.eyebrow}>The smarter way to move</Text>
+          <Text style={styles.title}>Move it your way.</Text>
+          <Text style={styles.subtitle}>
+            Book transport or drive with VanLink using the native app and Railway backend.
+          </Text>
         </View>
 
         <View style={styles.actions}>
@@ -97,7 +101,7 @@ const LandingScreen: React.FC<Props> = ({ navigation }) => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: colors.background,
   },
   container: {
     flex: 1,
@@ -110,36 +114,45 @@ const styles = StyleSheet.create({
   header: {
     marginBottom: 36,
   },
-  title: {
-    fontSize: 36,
+  eyebrow: {
+    color: colors.primary,
+    fontSize: 12,
     fontWeight: '800',
-    color: '#111827',
-    marginBottom: 8,
+    marginBottom: 12,
+    textAlign: 'center',
+    textTransform: 'uppercase',
+  },
+  title: {
+    fontSize: 40,
+    fontWeight: '800',
+    color: colors.text,
+    marginBottom: 12,
     textAlign: 'center',
   },
   subtitle: {
     fontSize: 16,
-    color: '#6b7280',
+    color: colors.mutedText,
     textAlign: 'center',
+    lineHeight: 23,
   },
   actions: {
     gap: 16,
   },
   actionCard: {
-    backgroundColor: '#111827',
-    borderRadius: 12,
+    backgroundColor: colors.primary,
+    borderRadius: radii.card,
     padding: 20,
   },
   actionTitle: {
     fontSize: 22,
     fontWeight: '700',
-    color: '#ffffff',
+    color: colors.primaryText,
     marginBottom: 8,
   },
   actionDescription: {
     fontSize: 15,
     lineHeight: 22,
-    color: '#d1d5db',
+    color: '#d9dedc',
   },
   actionFooter: {
     marginTop: 18,
@@ -147,7 +160,7 @@ const styles = StyleSheet.create({
   actionLink: {
     fontSize: 15,
     fontWeight: '700',
-    color: '#ffffff',
+    color: colors.primaryText,
   },
   signupSection: {
     marginTop: 32,
@@ -156,7 +169,7 @@ const styles = StyleSheet.create({
   signupPrompt: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#4b5563',
+    color: colors.mutedText,
     textAlign: 'center',
   },
   signupButtons: {
@@ -164,17 +177,17 @@ const styles = StyleSheet.create({
   },
   secondaryButton: {
     height: 48,
-    borderRadius: 8,
+    borderRadius: radii.control,
     borderWidth: 1,
-    borderColor: '#d1d5db',
+    borderColor: colors.border,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#ffffff',
+    backgroundColor: colors.surface,
   },
   secondaryButtonText: {
     fontSize: 15,
     fontWeight: '700',
-    color: '#111827',
+    color: colors.text,
   },
 });
 

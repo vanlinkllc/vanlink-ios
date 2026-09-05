@@ -208,8 +208,8 @@ const JobDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
               disabled={submitting}
             />
             <Text style={styles.muted}>
-              Card confirmation requires native Stripe PaymentSheet support.
-              Wallet-only confirmation is handled by the backend.
+              Wallet confirmation is handled by the backend. Card payments are started from
+              booking so the backend can create the correct Stripe intent for the job.
             </Text>
           </View>
         ) : null}

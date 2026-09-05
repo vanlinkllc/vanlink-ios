@@ -49,6 +49,10 @@ export interface Job {
   driverLng?: number;
   navPhase?: string;
   paymentStatus?: string;
+  _totalAmount?: number;
+  _driverEarnings?: number;
+  _bonusAmount?: number;
+  _bonusPercent?: number;
 }
 
 export interface Bid {
@@ -171,6 +175,27 @@ export interface PayoutResponse {
   feeAmount?: number;
   feePercent?: number;
   netAmount?: number;
+}
+
+export interface DriverStats {
+  xp: number;
+  jobsCompleted: number;
+  jobsAccepted: number;
+  rating: number;
+  totalReviews: number;
+  acceptanceRate: number;
+  cancellationRate: number;
+  isVerified: boolean;
+  isVlvSubscribed: boolean;
+  verificationStatus?: string;
+  tier: string;
+  totalEarnings: number;
+  walletBalance: number;
+  firstName: string;
+  vanlinkId: string;
+  vehicleType?: string;
+  radiusKm: number;
+  incomeTarget: number;
 }
 
 // Auth endpoints
@@ -312,6 +337,10 @@ export async function fetchJob(jobId: string): Promise<Job> {
 
 export async function fetchActiveDriverJob(): Promise<Job | null> {
   return api<Job | null>('/jobs/my/active');
+}
+
+export async function fetchDriverStats(): Promise<DriverStats> {
+  return api<DriverStats>('/users/driver/stats');
 }
 
 export async function completeJob(jobId: string): Promise<Job> {

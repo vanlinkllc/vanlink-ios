@@ -12,7 +12,7 @@ import { Button } from '@/components/Button';
 import { JobCard } from '@/components/JobCard';
 import { StateView } from '@/components/StateView';
 import { useAuth } from '@/hooks/useAuth';
-import { fetchActiveDriverJob, type Job } from '@/lib/api';
+import { fetchActiveDriverJob, fetchDriverStats, type DriverStats, type Job } from '@/lib/api';
 import type { DriverStackParamList } from '@/types/navigation';
 import { formatCurrency } from '@/utils/format';
 
@@ -21,6 +21,7 @@ type Props = NativeStackScreenProps<DriverStackParamList, 'DriverHome'>;
 const DriverHomeScreen: React.FC<Props> = ({ navigation }) => {
   const { profile, refreshProfile } = useAuth();
   const [activeJob, setActiveJob] = useState<Job | null>(null);
+  const [stats, setStats] = useState<DriverStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -29,8 +30,12 @@ const DriverHomeScreen: React.FC<Props> = ({ navigation }) => {
     try {
       setError(null);
       await refreshProfile();
-      const active = await fetchActiveDriverJob();
+      const [active, driverStats] = await Promise.all([
+        fetchActiveDriverJob(),
+        fetchDriverStats(),
+      ]);
       setActiveJob(active);
+      setStats(driverStats);
     } catch (loadError) {
       setError(loadError instanceof Error ? loadError.message : 'Unable to load driver data.');
     } finally {
@@ -61,8 +66,27 @@ const DriverHomeScreen: React.FC<Props> = ({ navigation }) => {
         }
       >
         <View style={styles.header}>
-          <Text style={styles.greeting}>Welcome, {profile?.firstName || 'Driver'}</Text>
-          <Text style={styles.subtle}>Wallet {formatCurrency(profile?.walletBalance)}</Text>
+          <Text style={styles.greeting}>Welcome, {stats?.firstName || profile?.firstName || 'Driver'}</Text>
+          <Text style={styles.subtle}>Wallet {formatCurrency(stats?.walletBalance ?? profile?.walletBalance)}</Text>
+        </View>
+
+        <View style={styles.statsGrid}>
+          <View style={styles.statCard}>
+            <Text style={styles.statLabel}>Total earnings</Text>
+            <Text style={styles.statValue}>{formatCurrency(stats?.totalEarnings)}</Text>
+          </View>
+          <View style={styles.statCard}>
+            <Text style={styles.statLabel}>Completed</Text>
+            <Text style={styles.statValue}>{stats?.jobsCompleted ?? 0}</Text>
+          </View>
+          <View style={styles.statCard}>
+            <Text style={styles.statLabel}>Rating</Text>
+            <Text style={styles.statValue}>{stats?.rating?.toFixed(1) ?? '0.0'}</Text>
+          </View>
+          <View style={styles.statCard}>
+            <Text style={styles.statLabel}>Radius</Text>
+            <Text style={styles.statValue}>{stats?.radiusKm ?? 0} km</Text>
+          </View>
         </View>
 
         <View style={styles.actions}>
@@ -136,6 +160,30 @@ const styles = StyleSheet.create({
   },
   actions: {
     gap: 12,
+  },
+  statsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+  },
+  statCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    padding: 14,
+    width: '48%',
+    gap: 6,
+  },
+  statLabel: {
+    color: '#6b7280',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  statValue: {
+    color: '#111827',
+    fontSize: 18,
+    fontWeight: '800',
   },
   sectionTitle: {
     color: '#111827',

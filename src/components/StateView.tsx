@@ -1,6 +1,7 @@
 import React from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { Button } from './Button';
+import { colors } from '@/constants/theme';
 
 interface StateViewProps {
   title: string;
@@ -18,7 +19,7 @@ export const StateView: React.FC<StateViewProps> = ({
   onAction,
 }) => (
   <View style={styles.container}>
-    {loading && <ActivityIndicator size="large" color="#111827" />}
+    {loading && <ActivityIndicator size="large" color={colors.primary} />}
     <Text style={styles.title}>{title}</Text>
     {message ? <Text style={styles.message}>{message}</Text> : null}
     {actionLabel && onAction ? (
@@ -33,18 +34,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: 24,
-    backgroundColor: '#f9fafb',
+    backgroundColor: colors.background,
   },
   title: {
     marginTop: 12,
-    color: '#111827',
+    color: colors.text,
     fontSize: 18,
     fontWeight: '800',
     textAlign: 'center',
   },
   message: {
     marginTop: 8,
-    color: '#6b7280',
+    color: colors.mutedText,
     fontSize: 14,
     lineHeight: 20,
     textAlign: 'center',

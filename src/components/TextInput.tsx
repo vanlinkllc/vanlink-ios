@@ -5,6 +5,7 @@ import {
   TextInputProps as RNTextInputProps,
   ViewStyle,
 } from 'react-native';
+import { colors, radii } from '@/constants/theme';
 
 interface TextInputProps {
   placeholder?: string;
@@ -43,7 +44,7 @@ export const TextInput: React.FC<TextInputProps> = ({
       autoCapitalize={autoCapitalize}
       multiline={multiline}
       numberOfLines={numberOfLines}
-      placeholderTextColor="#999"
+      placeholderTextColor={colors.mutedText}
     />
   );
 };
@@ -51,9 +52,11 @@ export const TextInput: React.FC<TextInputProps> = ({
 const styles = StyleSheet.create({
   input: {
     height: 48,
-    borderRadius: 8,
+    borderRadius: radii.control,
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: colors.border,
+    backgroundColor: colors.surface,
+    color: colors.text,
     paddingHorizontal: 12,
     fontSize: 16,
     fontFamily: 'System',

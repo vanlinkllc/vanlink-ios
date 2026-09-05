@@ -5,7 +5,7 @@ import { useStripe } from '@stripe/stripe-react-native';
 import { Button } from '@/components/Button';
 import { TextInput } from '@/components/TextInput';
 import { useAuth } from '@/hooks/useAuth';
-import { confirmJobPayment, createJob, createJobPaymentIntent } from '@/lib/api';
+import { confirmJobPayment, createJob, createJobPaymentIntent, type Job } from '@/lib/api';
 import { requireStripePublishableKey, STRIPE_PUBLISHABLE_KEY } from '@/lib/stripe';
 import type { CustomerStackParamList } from '@/types/navigation';
 
@@ -44,6 +44,7 @@ const BookDeliveryScreen: React.FC<Props> = ({ navigation }) => {
     }
 
     setLoading(true);
+    let createdJob: Job | null = null;
     try {
       if (!STRIPE_PUBLISHABLE_KEY && (profile?.walletBalance ?? 0) < parsedBudget) {
         throw new Error(
@@ -51,9 +52,22 @@ const BookDeliveryScreen: React.FC<Props> = ({ navigation }) => {
         );
       }
 
+      const job = await createJob({
+        pickupAddress: pickupAddress.trim(),
+        dropoffAddress: dropoffAddress.trim(),
+        itemDescription: itemDescription.trim(),
+        itemValue: parsedValue,
+        budget: parsedBudget,
+        pricingModel,
+        helpersRequired: Number.isFinite(parsedHelpers) ? parsedHelpers : 0,
+      });
+      createdJob = job;
+
+      const totalAmount = job._totalAmount ?? parsedBudget;
       const paymentIntent = await createJobPaymentIntent(
-        parsedBudget,
-        itemDescription.trim()
+        totalAmount,
+        itemDescription.trim(),
+        job.id
       );
 
       if (!paymentIntent.walletOnly) {
@@ -77,16 +91,6 @@ const BookDeliveryScreen: React.FC<Props> = ({ navigation }) => {
         }
       }
 
-      const job = await createJob({
-        pickupAddress: pickupAddress.trim(),
-        dropoffAddress: dropoffAddress.trim(),
-        itemDescription: itemDescription.trim(),
-        itemValue: parsedValue,
-        budget: parsedBudget,
-        pricingModel,
-        helpersRequired: Number.isFinite(parsedHelpers) ? parsedHelpers : 0,
-        stripePaymentIntentId: paymentIntent.paymentIntentId ?? undefined,
-      });
       const confirmedJob = await confirmJobPayment(job.id, paymentIntent.paymentIntentId);
       Alert.alert('Delivery booked', 'Your payment was confirmed by the backend.', [
         {
@@ -96,6 +100,27 @@ const BookDeliveryScreen: React.FC<Props> = ({ navigation }) => {
         },
       ]);
     } catch (error) {
+      if (createdJob) {
+        const pendingJob = createdJob;
+        Alert.alert(
+          'Payment not completed',
+          error instanceof Error
+            ? error.message
+            : 'The delivery was created but payment could not be confirmed.',
+          [
+            {
+              text: 'View delivery',
+              onPress: () =>
+                navigation.replace('JobDetails', {
+                  jobId: pendingJob.id,
+                  mode: 'customer',
+                }),
+            },
+            { text: 'Stay here', style: 'cancel' },
+          ]
+        );
+        return;
+      }
       Alert.alert(
         'Booking failed',
         error instanceof Error ? error.message : 'Unable to book delivery.'
