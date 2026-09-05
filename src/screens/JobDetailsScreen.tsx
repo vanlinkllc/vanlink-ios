@@ -10,15 +10,19 @@ import {
 } from 'react-native';
 import type { NativeStackNavigationProp, NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Button } from '@/components/Button';
+import { RouteMap } from '@/components/RouteMap';
 import { StateView } from '@/components/StateView';
+import { colors } from '@/constants/theme';
 import {
   acceptJob,
   confirmJobPayment,
   createBid,
   fetchBidsForJob,
   fetchJob,
+  fetchRoute,
   type Bid,
   type Job,
+  type RouteResult,
 } from '@/lib/api';
 import type { CustomerStackParamList, DriverStackParamList } from '@/types/navigation';
 import { formatCurrency, formatDateTime, titleCase } from '@/utils/format';
@@ -37,13 +41,57 @@ const JobDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [bidsError, setBidsError] = useState<string | null>(null);
+  const [routeResult, setRouteResult] = useState<RouteResult | null>(null);
+  const [routeLoading, setRouteLoading] = useState(false);
+  const [routeError, setRouteError] = useState<string | null>(null);
   const mode = route.params.mode ?? 'customer';
+
+  const loadRoute = useCallback(async (loadedJob: Job) => {
+    if (
+      !Number.isFinite(loadedJob.pickupLat) ||
+      !Number.isFinite(loadedJob.pickupLng) ||
+      !Number.isFinite(loadedJob.dropoffLat) ||
+      !Number.isFinite(loadedJob.dropoffLng)
+    ) {
+      setRouteResult(null);
+      setRouteError('Tracking map needs backend coordinates for pickup and destination.');
+      return;
+    }
+
+    try {
+      setRouteLoading(true);
+      setRouteError(null);
+      const result = await fetchRoute(
+        {
+          lat: loadedJob.pickupLat as number,
+          lng: loadedJob.pickupLng as number,
+          address: loadedJob.pickupAddress,
+        },
+        {
+          lat: loadedJob.dropoffLat as number,
+          lng: loadedJob.dropoffLng as number,
+          address: loadedJob.dropoffAddress,
+        }
+      );
+      setRouteResult(result);
+    } catch (routeLoadError) {
+      setRouteResult(null);
+      setRouteError(
+        routeLoadError instanceof Error ? routeLoadError.message : 'Unable to load tracking route.'
+      );
+    } finally {
+      setRouteLoading(false);
+    }
+  }, []);
 
   const load = useCallback(async () => {
     try {
       setError(null);
       const loadedJob = await fetchJob(route.params.jobId);
       setJob(loadedJob);
+      if (mode === 'customer') {
+        loadRoute(loadedJob);
+      }
       if (mode === 'customer') {
         try {
           setBidsError(null);
@@ -62,7 +110,7 @@ const JobDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [mode, route.params.jobId]);
+  }, [loadRoute, mode, route.params.jobId]);
 
   useEffect(() => {
     load();
@@ -184,6 +232,20 @@ const JobDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
 
         {mode === 'customer' ? (
           <View style={styles.card}>
+            <Text style={styles.sectionTitle}>Tracking</Text>
+            {routeResult ? (
+              <Text style={styles.value}>
+                {routeResult.distanceKm.toFixed(2)} km · {routeResult.durationText}
+              </Text>
+            ) : null}
+            {routeLoading ? <Text style={styles.muted}>Loading backend route...</Text> : null}
+            {routeError ? <Text style={styles.warningText}>{routeError}</Text> : null}
+            <RouteMap job={job} routeResult={routeResult} />
+          </View>
+        ) : null}
+
+        {mode === 'customer' ? (
+          <View style={styles.card}>
             <Text style={styles.sectionTitle}>Bids</Text>
             {bids.length === 0 ? (
               <Text style={styles.muted}>
@@ -242,59 +304,64 @@ const JobDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#f9fafb',
+    backgroundColor: colors.background,
   },
   content: {
     padding: 20,
     gap: 14,
   },
   card: {
-    backgroundColor: '#ffffff',
+    backgroundColor: colors.surface,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#e5e7eb',
+    borderColor: colors.border,
     padding: 16,
     gap: 8,
   },
   status: {
-    color: '#374151',
+    color: colors.mutedText,
     fontSize: 13,
     fontWeight: '800',
   },
   title: {
-    color: '#111827',
+    color: colors.text,
     fontSize: 20,
     fontWeight: '800',
     lineHeight: 26,
   },
   price: {
-    color: '#111827',
+    color: colors.text,
     fontSize: 24,
     fontWeight: '800',
   },
   label: {
-    color: '#6b7280',
+    color: colors.mutedText,
     fontSize: 12,
     fontWeight: '800',
     marginTop: 8,
   },
   value: {
-    color: '#111827',
+    color: colors.text,
     fontSize: 15,
     lineHeight: 22,
   },
   sectionTitle: {
-    color: '#111827',
+    color: colors.text,
     fontSize: 16,
     fontWeight: '800',
   },
   muted: {
-    color: '#6b7280',
+    color: colors.mutedText,
     fontSize: 14,
     lineHeight: 20,
   },
   actions: {
     gap: 12,
+  },
+  warningText: {
+    color: colors.warningText,
+    fontSize: 13,
+    lineHeight: 18,
   },
 });
 

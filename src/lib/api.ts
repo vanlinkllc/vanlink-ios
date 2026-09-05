@@ -34,6 +34,10 @@ export interface Job {
   finalPrice?: number;
   pickupAddress: string;
   dropoffAddress: string;
+  pickupLat?: number;
+  pickupLng?: number;
+  dropoffLat?: number;
+  dropoffLng?: number;
   itemDescription: string;
   itemValue: number;
   itemPhotos: string[];
@@ -120,6 +124,46 @@ export interface CreateJobInput {
 export interface DriverLocationParams {
   driverLat: number;
   driverLng: number;
+}
+
+export interface MapAddressComponent {
+  longName: string;
+  shortName: string;
+  types: string[];
+}
+
+export interface PlaceAutocompleteResult {
+  placeId: string;
+  description: string;
+  primaryText: string;
+  secondaryText: string;
+}
+
+export interface PlaceDetails {
+  placeId: string;
+  formattedAddress: string;
+  lat: number;
+  lng: number;
+  eircode?: string;
+  addressComponents: MapAddressComponent[];
+}
+
+export interface RoutePoint {
+  lat: number;
+  lng: number;
+  address?: string;
+}
+
+export interface DistanceResult {
+  distanceMeters: number;
+  distanceKm: number;
+  durationSeconds: number;
+  durationText: string;
+}
+
+export interface RouteResult extends DistanceResult {
+  polyline?: string;
+  bounds: RoutePoint[];
 }
 
 export interface ForgotPasswordResponse {
@@ -277,6 +321,53 @@ export async function updateProfile(
   return api<Profile>('/auth/me', {
     method: 'PATCH',
     data: updates,
+  });
+}
+
+// Backend-controlled Google Maps endpoints. The native app never calls Google directly.
+export async function searchPlaces(
+  input: string,
+  country = 'ie'
+): Promise<PlaceAutocompleteResult[]> {
+  return api<PlaceAutocompleteResult[]>('/maps/places/autocomplete', {
+    params: { input, country },
+  });
+}
+
+export async function fetchPlaceDetails(placeId: string): Promise<PlaceDetails> {
+  return api<PlaceDetails>(`/maps/places/${encodeURIComponent(placeId)}`);
+}
+
+export async function geocodeAddress(address: string): Promise<PlaceDetails[]> {
+  return api<PlaceDetails[]>('/maps/geocode', {
+    params: { address },
+  });
+}
+
+export async function reverseGeocode(lat: number, lng: number): Promise<PlaceDetails[]> {
+  return api<PlaceDetails[]>('/maps/reverse-geocode', {
+    params: { lat, lng },
+  });
+}
+
+export async function fetchDistance(
+  origin: RoutePoint,
+  destination: RoutePoint
+): Promise<DistanceResult> {
+  return api<DistanceResult>('/maps/distance', {
+    method: 'POST',
+    data: { origin, destination },
+  });
+}
+
+export async function fetchRoute(
+  origin: RoutePoint,
+  destination: RoutePoint,
+  waypoints?: RoutePoint[]
+): Promise<RouteResult> {
+  return api<RouteResult>('/maps/route', {
+    method: 'POST',
+    data: { origin, destination, waypoints },
   });
 }
 

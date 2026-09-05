@@ -1,6 +1,8 @@
 import React from 'react';
 import {
+  NativeSyntheticEvent,
   StyleSheet,
+  TextInputFocusEventData,
   TextInput as RNTextInput,
   TextInputProps as RNTextInputProps,
   ViewStyle,
@@ -18,6 +20,8 @@ interface TextInputProps {
   autoCapitalize?: RNTextInputProps['autoCapitalize'];
   multiline?: boolean;
   numberOfLines?: number;
+  onFocus?: (event: NativeSyntheticEvent<TextInputFocusEventData>) => void;
+  returnKeyType?: RNTextInputProps['returnKeyType'];
 }
 
 export const TextInput: React.FC<TextInputProps> = ({
@@ -31,6 +35,8 @@ export const TextInput: React.FC<TextInputProps> = ({
   autoCapitalize = 'sentences',
   multiline,
   numberOfLines,
+  onFocus,
+  returnKeyType,
 }) => {
   return (
     <RNTextInput
@@ -45,6 +51,8 @@ export const TextInput: React.FC<TextInputProps> = ({
       multiline={multiline}
       numberOfLines={numberOfLines}
       placeholderTextColor={colors.mutedText}
+      onFocus={onFocus}
+      returnKeyType={returnKeyType}
     />
   );
 };

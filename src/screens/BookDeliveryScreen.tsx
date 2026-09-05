@@ -1,11 +1,21 @@
-import React, { useState } from 'react';
-import { Alert, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, Alert, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useStripe } from '@stripe/stripe-react-native';
+import { AddressAutocomplete } from '@/components/AddressAutocomplete';
 import { Button } from '@/components/Button';
 import { TextInput } from '@/components/TextInput';
+import { colors, radii } from '@/constants/theme';
 import { useAuth } from '@/hooks/useAuth';
-import { confirmJobPayment, createJob, createJobPaymentIntent, type Job } from '@/lib/api';
+import {
+  confirmJobPayment,
+  createJob,
+  createJobPaymentIntent,
+  fetchDistance,
+  type DistanceResult,
+  type Job,
+  type PlaceDetails,
+} from '@/lib/api';
 import { requireStripePublishableKey, STRIPE_PUBLISHABLE_KEY } from '@/lib/stripe';
 import type { CustomerStackParamList } from '@/types/navigation';
 
@@ -14,6 +24,11 @@ type Props = NativeStackScreenProps<CustomerStackParamList, 'BookDelivery'>;
 const BookDeliveryScreen: React.FC<Props> = ({ navigation }) => {
   const [pickupAddress, setPickupAddress] = useState('');
   const [dropoffAddress, setDropoffAddress] = useState('');
+  const [pickupPlace, setPickupPlace] = useState<PlaceDetails | null>(null);
+  const [dropoffPlace, setDropoffPlace] = useState<PlaceDetails | null>(null);
+  const [distance, setDistance] = useState<DistanceResult | null>(null);
+  const [distanceLoading, setDistanceLoading] = useState(false);
+  const [distanceError, setDistanceError] = useState<string | null>(null);
   const [itemDescription, setItemDescription] = useState('');
   const [itemValue, setItemValue] = useState('');
   const [budget, setBudget] = useState('');
@@ -23,13 +38,77 @@ const BookDeliveryScreen: React.FC<Props> = ({ navigation }) => {
   const { initPaymentSheet, presentPaymentSheet } = useStripe();
   const { profile } = useAuth();
 
+  useEffect(() => {
+    if (!pickupPlace || !dropoffPlace) {
+      setDistance(null);
+      setDistanceError(null);
+      setDistanceLoading(false);
+      return;
+    }
+
+    let active = true;
+    setDistanceLoading(true);
+    setDistanceError(null);
+    fetchDistance(
+      {
+        lat: pickupPlace.lat,
+        lng: pickupPlace.lng,
+        address: pickupPlace.formattedAddress,
+      },
+      {
+        lat: dropoffPlace.lat,
+        lng: dropoffPlace.lng,
+        address: dropoffPlace.formattedAddress,
+      }
+    )
+      .then(result => {
+        if (active) setDistance(result);
+      })
+      .catch(error => {
+        if (active) {
+          setDistance(null);
+          setDistanceError(
+            error instanceof Error ? error.message : 'Unable to calculate route distance.'
+          );
+        }
+      })
+      .finally(() => {
+        if (active) setDistanceLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [dropoffPlace, pickupPlace]);
+
   const handleSubmit = async () => {
     const parsedBudget = Number(budget);
     const parsedValue = Number(itemValue);
     const parsedHelpers = Number(helpersRequired || 0);
 
-    if (!pickupAddress.trim() || !dropoffAddress.trim() || !itemDescription.trim()) {
-      Alert.alert('Missing details', 'Pickup, dropoff, and item details are required.');
+    if (!pickupPlace || !dropoffPlace) {
+      Alert.alert(
+        'Select addresses',
+        'Choose pickup and destination addresses from the VanLink address search results.'
+      );
+      return;
+    }
+
+    if (!itemDescription.trim()) {
+      Alert.alert('Missing details', 'Item details are required.');
+      return;
+    }
+
+    if (distanceLoading) {
+      Alert.alert('Route still loading', 'Wait for the backend route distance before submitting.');
+      return;
+    }
+
+    if (!distance) {
+      Alert.alert(
+        'Route unavailable',
+        distanceError || 'The backend could not calculate distance for these addresses.'
+      );
       return;
     }
 
@@ -53,8 +132,15 @@ const BookDeliveryScreen: React.FC<Props> = ({ navigation }) => {
       }
 
       const job = await createJob({
-        pickupAddress: pickupAddress.trim(),
-        dropoffAddress: dropoffAddress.trim(),
+        pickupAddress: pickupPlace.formattedAddress,
+        pickupLat: pickupPlace.lat,
+        pickupLng: pickupPlace.lng,
+        pickupEircode: pickupPlace.eircode,
+        dropoffAddress: dropoffPlace.formattedAddress,
+        dropoffLat: dropoffPlace.lat,
+        dropoffLng: dropoffPlace.lng,
+        dropoffEircode: dropoffPlace.eircode,
+        distanceKm: distance.distanceKm,
         itemDescription: itemDescription.trim(),
         itemValue: parsedValue,
         budget: parsedBudget,
@@ -134,21 +220,60 @@ const BookDeliveryScreen: React.FC<Props> = ({ navigation }) => {
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <View style={styles.form}>
-          <View style={styles.blockedCard}>
-            <Text style={styles.blockedTitle}>Google address tools pending</Text>
-            <Text style={styles.blockedText}>
-              Address autocomplete, geocoding, and route distance are blocked until
-              backend-controlled Google endpoints are added. Enter addresses manually.
-            </Text>
-          </View>
-          <View style={styles.formGroup}>
-            <Text style={styles.label}>Pickup address</Text>
-            <TextInput value={pickupAddress} onChangeText={setPickupAddress} editable={!loading} />
-          </View>
-          <View style={styles.formGroup}>
-            <Text style={styles.label}>Dropoff address</Text>
-            <TextInput value={dropoffAddress} onChangeText={setDropoffAddress} editable={!loading} />
-          </View>
+          <AddressAutocomplete
+            label="Pickup address"
+            value={pickupAddress}
+            selectedPlace={pickupPlace}
+            disabled={loading}
+            onChangeText={(text) => {
+              setPickupAddress(text);
+              setPickupPlace(null);
+            }}
+            onSelectPlace={(place) => {
+              setPickupPlace(place);
+              setPickupAddress(place.formattedAddress);
+            }}
+            onClearPlace={() => setPickupPlace(null)}
+          />
+          <AddressAutocomplete
+            label="Destination address"
+            value={dropoffAddress}
+            selectedPlace={dropoffPlace}
+            disabled={loading}
+            onChangeText={(text) => {
+              setDropoffAddress(text);
+              setDropoffPlace(null);
+            }}
+            onSelectPlace={(place) => {
+              setDropoffPlace(place);
+              setDropoffAddress(place.formattedAddress);
+            }}
+            onClearPlace={() => setDropoffPlace(null)}
+          />
+          {pickupPlace && dropoffPlace ? (
+            <View style={styles.routeCard}>
+              {distanceLoading ? (
+                <View style={styles.routeRow}>
+                  <ActivityIndicator color={colors.primary} />
+                  <Text style={styles.routeText}>Calculating route...</Text>
+                </View>
+              ) : distance ? (
+                <>
+                  <Text style={styles.routeLabel}>Backend route estimate</Text>
+                  <Text style={styles.routeValue}>
+                    {distance.distanceKm.toFixed(2)} km · {distance.durationText}
+                  </Text>
+                </>
+              ) : (
+                <>
+                  <Text style={styles.routeLabel}>Route unavailable</Text>
+                  <Text style={styles.routeError}>
+                    {distanceError || 'The backend could not calculate this route.'}
+                  </Text>
+                </>
+              )}
+            </View>
+          ) : null}
           <View style={styles.formGroup}>
             <Text style={styles.label}>Item description</Text>
             <TextInput
@@ -220,7 +345,7 @@ const BookDeliveryScreen: React.FC<Props> = ({ navigation }) => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: colors.background,
   },
   content: {
     padding: 20,
@@ -228,29 +353,43 @@ const styles = StyleSheet.create({
   form: {
     gap: 16,
   },
-  blockedCard: {
-    backgroundColor: '#fffbeb',
-    borderRadius: 10,
+  routeCard: {
+    backgroundColor: colors.surface,
+    borderRadius: radii.card,
     borderWidth: 1,
-    borderColor: '#fde68a',
+    borderColor: colors.border,
     padding: 14,
     gap: 6,
   },
-  blockedTitle: {
-    color: '#92400e',
-    fontSize: 14,
+  routeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  routeLabel: {
+    color: colors.mutedText,
+    fontSize: 12,
     fontWeight: '800',
   },
-  blockedText: {
-    color: '#92400e',
+  routeText: {
+    color: colors.mutedText,
     fontSize: 13,
-    lineHeight: 19,
+  },
+  routeValue: {
+    color: colors.text,
+    fontSize: 16,
+    fontWeight: '800',
+  },
+  routeError: {
+    color: colors.dangerText,
+    fontSize: 13,
+    lineHeight: 18,
   },
   formGroup: {
     gap: 8,
   },
   label: {
-    color: '#111827',
+    color: colors.text,
     fontSize: 14,
     fontWeight: '700',
   },
