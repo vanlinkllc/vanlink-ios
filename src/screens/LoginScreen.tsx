@@ -54,14 +54,6 @@ const LoginScreen: React.FC<Props> = ({ navigation, route }) => {
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
       >
-        <TouchableOpacity
-          style={styles.backButton}
-          activeOpacity={0.7}
-          onPress={() => navigation.goBack()}
-        >
-          <Text style={styles.backButtonText}>Back</Text>
-        </TouchableOpacity>
-
         <Text style={styles.title}>{roleLabel} login</Text>
         <Text style={styles.subtitle}>Sign in to continue with VanLink</Text>
 
@@ -139,17 +131,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 20,
     paddingBottom: 40,
-  },
-  backButton: {
-    alignSelf: 'flex-start',
-    paddingVertical: 8,
-    paddingRight: 12,
-    marginBottom: 24,
-  },
-  backButtonText: {
-    color: '#374151',
-    fontSize: 15,
-    fontWeight: '700',
   },
   title: {
     fontSize: 32,

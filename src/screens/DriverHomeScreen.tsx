@@ -104,6 +104,13 @@ const DriverHomeScreen: React.FC<Props> = ({ navigation }) => {
             onPress={() => navigation.navigate('ActiveJob')}
             variant="secondary"
           />
+          {__DEV__ ? (
+            <Button
+              title="Development QA"
+              onPress={() => navigation.navigate('DevQa')}
+              variant="secondary"
+            />
+          ) : null}
         </View>
 
         <Text style={styles.sectionTitle}>Current job</Text>

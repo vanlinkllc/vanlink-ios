@@ -37,7 +37,6 @@ const AccountScreen: React.FC = () => {
     Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
       {
         text: 'Cancel',
-        onPress: () => {},
         style: 'cancel',
       },
       {

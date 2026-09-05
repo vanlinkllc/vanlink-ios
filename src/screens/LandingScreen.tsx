@@ -93,6 +93,18 @@ const LandingScreen: React.FC<Props> = ({ navigation }) => {
             </TouchableOpacity>
           </View>
         </View>
+
+        {__DEV__ ? (
+          <View style={styles.qaSection}>
+            <TouchableOpacity
+              style={styles.qaButton}
+              activeOpacity={0.75}
+              onPress={() => navigation.navigate('DevQa')}
+            >
+              <Text style={styles.qaButtonText}>Development QA</Text>
+            </TouchableOpacity>
+          </View>
+        ) : null}
       </ScrollView>
     </SafeAreaView>
   );
@@ -188,6 +200,23 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '700',
     color: colors.text,
+  },
+  qaSection: {
+    marginTop: 20,
+  },
+  qaButton: {
+    height: 44,
+    borderRadius: radii.control,
+    borderWidth: 1,
+    borderColor: colors.warningBorder,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.warningBackground,
+  },
+  qaButtonText: {
+    color: colors.warningText,
+    fontSize: 14,
+    fontWeight: '800',
   },
 });
 

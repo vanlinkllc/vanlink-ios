@@ -8,6 +8,7 @@ export type AuthStackParamList = {
   Signup: { role: AuthRole };
   ForgotPassword: { role: AuthRole };
   ResetPassword: { role?: AuthRole; email?: string; token?: string };
+  DevQa: undefined;
 };
 
 export type CustomerStackParamList = {
@@ -15,6 +16,7 @@ export type CustomerStackParamList = {
   BookDelivery: undefined;
   Deliveries: undefined;
   JobDetails: { jobId: string; mode?: 'customer' };
+  DevQa: undefined;
 };
 
 export type DriverStackParamList = {
@@ -23,6 +25,7 @@ export type DriverStackParamList = {
   JobDetails: { jobId: string; mode?: 'driver' };
   ActiveJob: undefined;
   Route: { jobId: string };
+  DevQa: undefined;
 };
 
 export type CustomerTabParamList = {

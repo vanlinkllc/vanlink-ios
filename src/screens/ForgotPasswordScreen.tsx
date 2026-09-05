@@ -5,7 +5,6 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TouchableOpacity,
   View,
 } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -20,15 +19,6 @@ const ForgotPasswordScreen: React.FC<Props> = ({ navigation, route }) => {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const role = route.params.role;
-
-  const returnToLogin = () => {
-    if (navigation.canGoBack()) {
-      navigation.goBack();
-      return;
-    }
-
-    navigation.navigate('Login', { role });
-  };
 
   const handleSubmit = async () => {
     const trimmedEmail = email.trim();
@@ -71,14 +61,6 @@ const ForgotPasswordScreen: React.FC<Props> = ({ navigation, route }) => {
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-        <TouchableOpacity
-          style={styles.backButton}
-          activeOpacity={0.7}
-          onPress={returnToLogin}
-        >
-          <Text style={styles.backButtonText}>Back to login</Text>
-        </TouchableOpacity>
-
         <Text style={styles.title}>Reset password</Text>
         <Text style={styles.subtitle}>
           Enter your email. VanLink will send a reset link from the backend.
@@ -129,17 +111,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 20,
     paddingBottom: 40,
-  },
-  backButton: {
-    alignSelf: 'flex-start',
-    paddingVertical: 8,
-    paddingRight: 12,
-    marginBottom: 24,
-  },
-  backButtonText: {
-    color: '#374151',
-    fontSize: 15,
-    fontWeight: '700',
   },
   title: {
     color: '#111827',

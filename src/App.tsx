@@ -3,7 +3,7 @@ import { LinkingOptions, NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { ActivityIndicator, View } from 'react-native';
+import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
 import { StripeProvider } from '@stripe/stripe-react-native';
 import { useAuth } from '@/hooks/useAuth';
 import { STRIPE_PUBLISHABLE_KEY } from '@/lib/stripe';
@@ -18,6 +18,7 @@ import BookDeliveryScreen from '@/screens/BookDeliveryScreen';
 import DeliveriesListScreen from '@/screens/DeliveriesListScreen';
 import NotificationsScreen from '@/screens/NotificationsScreen';
 import WalletScreen from '@/screens/WalletScreen';
+import DevQaScreen from '@/screens/DevQaScreen';
 import DriverHomeScreen from '@/screens/DriverHomeScreen';
 import DriverJobsScreen from '@/screens/DriverJobsScreen';
 import JobDetailsScreen from '@/screens/JobDetailsScreen';
@@ -43,6 +44,12 @@ const CustomerStack = createNativeStackNavigator<CustomerStackParamList>();
 const DriverStack = createNativeStackNavigator<DriverStackParamList>();
 const CustomerTab = createBottomTabNavigator<CustomerTabParamList>();
 const DriverTab = createBottomTabNavigator<DriverTabParamList>();
+
+const HeaderBackButton = ({ label = '< Back', onPress }: { label?: string; onPress: () => void }) => (
+  <TouchableOpacity activeOpacity={0.7} onPress={onPress} style={{ paddingRight: 16 }}>
+    <Text style={{ color: '#111827', fontSize: 16, fontWeight: '700' }}>{label}</Text>
+  </TouchableOpacity>
+);
 
 const CustomerJobDetailsScreen = (
   props: NativeStackScreenProps<CustomerStackParamList, 'JobDetails'>
@@ -74,6 +81,14 @@ const CustomerWorkStack = () => (
       component={CustomerJobDetailsScreen}
       options={{ title: 'Delivery Details' }}
     />
+    {__DEV__ ? (
+      <CustomerStack.Screen
+        name="DevQa"
+        options={{ title: 'QA Navigation' }}
+      >
+        {props => <DevQaScreen {...props} area="customer" />}
+      </CustomerStack.Screen>
+    ) : null}
   </CustomerStack.Navigator>
 );
 
@@ -104,6 +119,14 @@ const DriverWorkStack = () => (
       component={RouteScreen}
       options={{ title: 'Route' }}
     />
+    {__DEV__ ? (
+      <DriverStack.Screen
+        name="DevQa"
+        options={{ title: 'QA Navigation' }}
+      >
+        {props => <DevQaScreen {...props} area="driver" />}
+      </DriverStack.Screen>
+    ) : null}
   </DriverStack.Navigator>
 );
 
@@ -194,14 +217,84 @@ const DriverNavigator = () => (
 const AuthNavigator = () => (
   <AuthStack.Navigator
     screenOptions={{
-      headerShown: false,
+      headerShown: true,
+      headerTitleStyle: {
+        color: '#111827',
+        fontSize: 17,
+        fontWeight: '800',
+      },
     }}
   >
-    <AuthStack.Screen name="Landing" component={LandingScreen} />
-    <AuthStack.Screen name="Login" component={LoginScreen} />
-    <AuthStack.Screen name="Signup" component={SignupScreen} />
-    <AuthStack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
-    <AuthStack.Screen name="ResetPassword" component={ResetPasswordScreen} />
+    <AuthStack.Screen name="Landing" component={LandingScreen} options={{ headerShown: false }} />
+    <AuthStack.Screen
+      name="Login"
+      component={LoginScreen}
+      options={({ navigation, route }) => ({
+        title: route.params.role === 'driver' ? 'Driver login' : 'Customer login',
+        headerBackVisible: false,
+        headerLeft: () => (
+          <HeaderBackButton
+            onPress={() => {
+              if (navigation.canGoBack()) navigation.goBack();
+              else navigation.navigate('Landing');
+            }}
+          />
+        ),
+      })}
+    />
+    <AuthStack.Screen
+      name="Signup"
+      component={SignupScreen}
+      options={({ navigation, route }) => ({
+        title: route.params.role === 'driver' ? 'Driver signup' : 'Customer signup',
+        headerBackVisible: false,
+        headerLeft: () => (
+          <HeaderBackButton
+            onPress={() => {
+              if (navigation.canGoBack()) navigation.goBack();
+              else navigation.navigate('Landing');
+            }}
+          />
+        ),
+      })}
+    />
+    <AuthStack.Screen
+      name="ForgotPassword"
+      component={ForgotPasswordScreen}
+      options={({ navigation, route }) => ({
+        title: 'Reset password',
+        headerBackVisible: false,
+        headerLeft: () => (
+          <HeaderBackButton
+            onPress={() => {
+              if (navigation.canGoBack()) navigation.goBack();
+              else navigation.navigate('Login', { role: route.params.role });
+            }}
+          />
+        ),
+      })}
+    />
+    <AuthStack.Screen
+      name="ResetPassword"
+      component={ResetPasswordScreen}
+      options={({ navigation, route }) => ({
+        title: 'Change password',
+        headerBackVisible: false,
+        headerLeft: () => (
+          <HeaderBackButton
+            onPress={() => {
+              if (navigation.canGoBack()) navigation.goBack();
+              else navigation.navigate('Login', { role: route.params.role ?? 'customer' });
+            }}
+          />
+        ),
+      })}
+    />
+    {__DEV__ ? (
+      <AuthStack.Screen name="DevQa" options={{ title: 'QA Navigation' }}>
+        {props => <DevQaScreen {...props} area="auth" />}
+      </AuthStack.Screen>
+    ) : null}
   </AuthStack.Navigator>
 );
 

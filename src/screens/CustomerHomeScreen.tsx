@@ -80,6 +80,13 @@ const CustomerHomeScreen: React.FC<Props> = ({ navigation }) => {
             onPress={() => navigation.navigate('Deliveries')}
             variant="secondary"
           />
+          {__DEV__ ? (
+            <Button
+              title="Development QA"
+              onPress={() => navigation.navigate('DevQa')}
+              variant="secondary"
+            />
+          ) : null}
         </View>
 
         <Text style={styles.sectionTitle}>Recent deliveries</Text>
