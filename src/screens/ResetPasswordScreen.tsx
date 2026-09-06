@@ -10,6 +10,8 @@ import {
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Button } from '@/components/Button';
 import { TextInput } from '@/components/TextInput';
+import { VanLinkLogo } from '@/components/VanLinkLogo';
+import { colors } from '@/constants/theme';
 import { resetPassword } from '@/lib/api';
 import type { AuthStackParamList } from '@/types/navigation';
 
@@ -49,6 +51,9 @@ const ResetPasswordScreen: React.FC<Props> = ({ navigation, route }) => {
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+        <View style={styles.logoWrap}>
+          <VanLinkLogo />
+        </View>
         <Text style={styles.title}>Enter reset token</Text>
         {route.params.email ? (
           <Text style={styles.subtitle}>Resetting password for {route.params.email}</Text>
@@ -100,24 +105,30 @@ const ResetPasswordScreen: React.FC<Props> = ({ navigation, route }) => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: colors.background,
   },
   content: {
     paddingHorizontal: 20,
-    paddingTop: 20,
+    paddingTop: 32,
     paddingBottom: 40,
   },
+  logoWrap: {
+    alignItems: 'center',
+    marginBottom: 30,
+  },
   title: {
-    color: '#111827',
-    fontSize: 30,
-    fontWeight: '800',
+    color: colors.text,
+    fontSize: 28,
+    fontWeight: '900',
     marginBottom: 8,
+    textAlign: 'center',
   },
   subtitle: {
-    color: '#6b7280',
+    color: colors.mutedText,
     fontSize: 15,
     lineHeight: 22,
     marginBottom: 28,
+    textAlign: 'center',
   },
   form: {
     gap: 18,
@@ -126,9 +137,9 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   label: {
-    color: '#111827',
-    fontSize: 14,
-    fontWeight: '700',
+    color: colors.mutedText,
+    fontSize: 12,
+    fontWeight: '800',
   },
 });
 

@@ -3,6 +3,7 @@ import { RefreshControl, SafeAreaView, ScrollView, StyleSheet, View } from 'reac
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { JobCard } from '@/components/JobCard';
 import { StateView } from '@/components/StateView';
+import { colors } from '@/constants/theme';
 import { fetchActiveDriverJob, type Job } from '@/lib/api';
 import type { DriverStackParamList } from '@/types/navigation';
 
@@ -62,7 +63,7 @@ const ActiveJobScreen: React.FC<Props> = ({ navigation }) => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#f9fafb',
+    backgroundColor: colors.background,
   },
   content: {
     padding: 20,

@@ -11,6 +11,8 @@ import {
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Button } from '@/components/Button';
 import { TextInput } from '@/components/TextInput';
+import { VanLinkLogo } from '@/components/VanLinkLogo';
+import { colors } from '@/constants/theme';
 import { useAuth } from '@/hooks/useAuth';
 import { sendEmailCode, verifyEmailCode } from '@/lib/api';
 import type { AuthStackParamList } from '@/types/navigation';
@@ -31,6 +33,7 @@ const SignupScreen: React.FC<Props> = ({ navigation, route }) => {
   const [loading, setLoading] = useState(false);
 
   const roleLabel = role === 'driver' ? 'Driver' : 'Customer';
+  const accentColor = role === 'driver' ? colors.driver : colors.customer;
 
   const trimmedEmail = email.trim().toLowerCase();
 
@@ -111,9 +114,15 @@ const SignupScreen: React.FC<Props> = ({ navigation, route }) => {
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
       >
+        <View style={styles.logoWrap}>
+          <VanLinkLogo />
+        </View>
+
         <Text style={styles.title}>{roleLabel} signup</Text>
         <Text style={styles.subtitle}>
-          Create your VanLink account with the Railway backend.
+          {role === 'driver'
+            ? 'Create your driver profile and start earning with VanLink.'
+            : 'Book trusted local drivers in minutes.'}
         </Text>
 
         <View style={styles.form}>
@@ -185,6 +194,7 @@ const SignupScreen: React.FC<Props> = ({ navigation, route }) => {
                   onPress={handleVerifyCode}
                   loading={loading && codeSent && !emailVerified}
                   disabled={loading || emailVerified}
+                  style={{ backgroundColor: accentColor }}
                 />
               </View>
             ) : null}
@@ -217,6 +227,7 @@ const SignupScreen: React.FC<Props> = ({ navigation, route }) => {
             onPress={handleSignup}
             loading={loading}
             disabled={loading || !emailVerified}
+            style={{ backgroundColor: accentColor }}
           />
 
           <TouchableOpacity
@@ -237,27 +248,33 @@ const SignupScreen: React.FC<Props> = ({ navigation, route }) => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: colors.background,
   },
   container: {
     flex: 1,
   },
   content: {
     paddingHorizontal: 20,
-    paddingTop: 20,
+    paddingTop: 32,
     paddingBottom: 40,
   },
+  logoWrap: {
+    alignItems: 'center',
+    marginBottom: 30,
+  },
   title: {
-    color: '#111827',
-    fontSize: 30,
-    fontWeight: '800',
+    color: colors.text,
+    fontSize: 28,
+    fontWeight: '900',
     marginBottom: 8,
+    textAlign: 'center',
   },
   subtitle: {
-    color: '#6b7280',
+    color: colors.mutedText,
     fontSize: 15,
     lineHeight: 22,
     marginBottom: 28,
+    textAlign: 'center',
   },
   form: {
     gap: 18,
@@ -274,25 +291,25 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   label: {
-    color: '#111827',
-    fontSize: 14,
-    fontWeight: '700',
+    color: colors.mutedText,
+    fontSize: 12,
+    fontWeight: '800',
   },
   verificationCard: {
-    backgroundColor: '#f9fafb',
-    borderRadius: 10,
+    backgroundColor: colors.secondary,
+    borderRadius: 14,
     borderWidth: 1,
-    borderColor: '#e5e7eb',
+    borderColor: colors.border,
     padding: 14,
     gap: 12,
   },
   verificationTitle: {
-    color: '#111827',
+    color: colors.text,
     fontSize: 15,
-    fontWeight: '800',
+    fontWeight: '900',
   },
   verificationText: {
-    color: '#6b7280',
+    color: colors.mutedText,
     fontSize: 13,
     lineHeight: 19,
   },
@@ -301,9 +318,9 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   switchButtonText: {
-    color: '#374151',
+    color: colors.primary,
     fontSize: 14,
-    fontWeight: '700',
+    fontWeight: '800',
   },
 });
 

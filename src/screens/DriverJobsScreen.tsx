@@ -4,6 +4,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Button } from '@/components/Button';
 import { JobCard } from '@/components/JobCard';
 import { StateView } from '@/components/StateView';
+import { colors } from '@/constants/theme';
 import { fetchAvailableJobs, fetchJobsForDriver, type Job } from '@/lib/api';
 import { getCurrentDriverCoordinates } from '@/lib/location';
 import type { DriverStackParamList } from '@/types/navigation';
@@ -89,7 +90,7 @@ const DriverJobsScreen: React.FC<Props> = ({ navigation, route }) => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#f9fafb',
+    backgroundColor: colors.background,
   },
   content: {
     minHeight: '100%',

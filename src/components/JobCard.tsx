@@ -1,5 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { colors, radii } from '@/constants/theme';
 import type { Job } from '@/lib/api';
 import { formatCurrency, formatDateTime, titleCase } from '@/utils/format';
 
@@ -34,10 +35,10 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onPress }) => (
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#ffffff',
-    borderRadius: 10,
+    backgroundColor: colors.surface,
+    borderRadius: radii.card,
     borderWidth: 1,
-    borderColor: '#e5e7eb',
+    borderColor: colors.border,
     padding: 16,
     gap: 8,
   },
@@ -48,26 +49,26 @@ const styles = StyleSheet.create({
   },
   title: {
     flex: 1,
-    color: '#111827',
+    color: colors.text,
     fontSize: 16,
     fontWeight: '800',
   },
   status: {
-    color: '#374151',
+    color: colors.primary,
     fontSize: 12,
     fontWeight: '800',
   },
   paymentStatus: {
-    color: '#6b7280',
+    color: colors.mutedText,
     fontSize: 12,
     fontWeight: '700',
   },
   route: {
-    color: '#4b5563',
+    color: colors.text,
     fontSize: 14,
   },
   description: {
-    color: '#6b7280',
+    color: colors.mutedText,
     fontSize: 14,
     lineHeight: 20,
   },
@@ -77,7 +78,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   meta: {
-    color: '#111827',
+    color: colors.text,
     fontSize: 13,
     fontWeight: '700',
   },

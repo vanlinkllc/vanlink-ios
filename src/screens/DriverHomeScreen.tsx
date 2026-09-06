@@ -11,6 +11,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Button } from '@/components/Button';
 import { JobCard } from '@/components/JobCard';
 import { StateView } from '@/components/StateView';
+import { colors, radii } from '@/constants/theme';
 import { useAuth } from '@/hooks/useAuth';
 import { fetchActiveDriverJob, fetchDriverStats, type DriverStats, type Job } from '@/lib/api';
 import type { DriverStackParamList } from '@/types/navigation';
@@ -147,7 +148,7 @@ const DriverHomeScreen: React.FC<Props> = ({ navigation }) => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#f9fafb',
+    backgroundColor: colors.background,
   },
   content: {
     padding: 20,
@@ -157,12 +158,12 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   greeting: {
-    color: '#111827',
+    color: colors.text,
     fontSize: 24,
     fontWeight: '800',
   },
   subtle: {
-    color: '#6b7280',
+    color: colors.mutedText,
     fontSize: 14,
   },
   actions: {
@@ -174,44 +175,44 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   statCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 10,
+    backgroundColor: colors.surface,
+    borderRadius: radii.card,
     borderWidth: 1,
-    borderColor: '#e5e7eb',
+    borderColor: colors.border,
     padding: 14,
     width: '48%',
     gap: 6,
   },
   statLabel: {
-    color: '#6b7280',
+    color: colors.mutedText,
     fontSize: 12,
     fontWeight: '700',
   },
   statValue: {
-    color: '#111827',
+    color: colors.text,
     fontSize: 18,
     fontWeight: '800',
   },
   sectionTitle: {
-    color: '#111827',
+    color: colors.text,
     fontSize: 18,
     fontWeight: '800',
   },
   emptyCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 10,
+    backgroundColor: colors.surface,
+    borderRadius: radii.card,
     borderWidth: 1,
-    borderColor: '#e5e7eb',
+    borderColor: colors.border,
     padding: 16,
     gap: 6,
   },
   emptyTitle: {
-    color: '#111827',
+    color: colors.text,
     fontSize: 16,
     fontWeight: '800',
   },
   emptyText: {
-    color: '#6b7280',
+    color: colors.mutedText,
     fontSize: 14,
     lineHeight: 20,
   },

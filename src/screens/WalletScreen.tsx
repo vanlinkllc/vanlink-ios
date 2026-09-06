@@ -13,6 +13,7 @@ import { useStripe } from '@stripe/stripe-react-native';
 import { Button } from '@/components/Button';
 import { StateView } from '@/components/StateView';
 import { TextInput } from '@/components/TextInput';
+import { colors, radii } from '@/constants/theme';
 import { useAuth } from '@/hooks/useAuth';
 import {
   cancelVlvSubscription,
@@ -351,15 +352,15 @@ const WalletScreen: React.FC = () => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#f9fafb',
+    backgroundColor: colors.background,
   },
   content: {
     padding: 20,
     gap: 16,
   },
   balanceCard: {
-    backgroundColor: '#111827',
-    borderRadius: 10,
+    backgroundColor: colors.text,
+    borderRadius: radii.card,
     padding: 18,
     gap: 8,
   },
@@ -374,26 +375,26 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
   card: {
-    backgroundColor: '#ffffff',
-    borderRadius: 10,
+    backgroundColor: colors.surface,
+    borderRadius: radii.card,
     borderWidth: 1,
-    borderColor: '#e5e7eb',
+    borderColor: colors.border,
     padding: 16,
     gap: 12,
   },
   sectionTitle: {
-    color: '#111827',
+    color: colors.text,
     fontSize: 16,
     fontWeight: '800',
   },
   muted: {
-    color: '#6b7280',
+    color: colors.mutedText,
     fontSize: 14,
     lineHeight: 20,
   },
   transaction: {
     borderTopWidth: 1,
-    borderTopColor: '#f3f4f6',
+    borderTopColor: colors.secondary,
     paddingTop: 12,
     gap: 4,
   },
@@ -404,22 +405,22 @@ const styles = StyleSheet.create({
   },
   transactionTitle: {
     flex: 1,
-    color: '#111827',
+    color: colors.text,
     fontSize: 15,
     fontWeight: '800',
   },
   transactionAmount: {
-    color: '#111827',
+    color: colors.text,
     fontSize: 15,
     fontWeight: '800',
   },
   description: {
-    color: '#4b5563',
+    color: colors.text,
     fontSize: 13,
     lineHeight: 19,
   },
   date: {
-    color: '#6b7280',
+    color: colors.mutedText,
     fontSize: 12,
     fontWeight: '700',
   },

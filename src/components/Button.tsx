@@ -4,6 +4,7 @@ import {
   TouchableOpacity,
   Text,
   ActivityIndicator,
+  StyleProp,
   ViewStyle,
 } from 'react-native';
 import { colors, radii } from '@/constants/theme';
@@ -13,7 +14,7 @@ interface ButtonProps {
   onPress: () => void;
   loading?: boolean;
   disabled?: boolean;
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
   variant?: 'primary' | 'secondary';
 }
 
@@ -61,12 +62,13 @@ const styles = StyleSheet.create({
     borderRadius: radii.control,
     justifyContent: 'center',
     alignItems: 'center',
+    paddingHorizontal: 16,
   },
   primary: {
     backgroundColor: colors.primary,
   },
   secondary: {
-    backgroundColor: colors.subtle,
+    backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.border,
   },
@@ -75,7 +77,7 @@ const styles = StyleSheet.create({
   },
   text: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '800',
   },
   primaryText: {
     color: colors.primaryText,

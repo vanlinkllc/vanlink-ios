@@ -1,12 +1,17 @@
 export const colors = {
-  background: '#f5f3ed',
+  background: '#ffffff',
   surface: '#ffffff',
-  text: '#17252d',
-  mutedText: '#66737b',
-  border: '#dedbd2',
-  primary: '#17252d',
+  text: '#0d3b66',
+  mutedText: '#64748b',
+  border: '#dbe4ee',
+  primary: '#00b4d8',
   primaryText: '#ffffff',
-  subtle: '#ebe7dc',
+  secondary: '#f1f7fb',
+  subtle: '#f1f7fb',
+  customer: '#00b4d8',
+  driver: '#10b981',
+  driverMuted: '#ecfdf5',
+  customerMuted: '#ecfeff',
   warningBackground: '#fffbeb',
   warningBorder: '#fde68a',
   warningText: '#92400e',
@@ -16,6 +21,6 @@ export const colors = {
 };
 
 export const radii = {
-  control: 8,
-  card: 10,
+  control: 12,
+  card: 14,
 };
