@@ -1,7 +1,6 @@
 import React from 'react';
 import {
   SafeAreaView,
-  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -18,7 +17,6 @@ interface RoleAction {
   title: string;
   description: string;
   role: AuthRole;
-  meta: string;
 }
 
 const actions: RoleAction[] = [
@@ -26,13 +24,11 @@ const actions: RoleAction[] = [
     title: 'Find a van',
     description: 'Get trusted local transport for furniture, store collections, and single-item moves.',
     role: 'customer',
-    meta: 'Customer',
   },
   {
     title: 'Drive with us',
     description: 'Build your driver profile, set your availability, and find better local work.',
     role: 'driver',
-    meta: 'Driver',
   },
 ];
 
@@ -61,21 +57,12 @@ const LandingScreen: React.FC<Props> = ({ navigation }) => {
 
         <View style={styles.actions}>
           {actions.map(action => (
-            <Pressable
+            <TouchableOpacity
               key={action.role}
-              style={({ pressed }) => [
-                styles.actionCard,
-                action.role === 'driver' && styles.driverCard,
-                pressed && styles.actionCardPressed,
-              ]}
+              style={styles.actionCard}
+              activeOpacity={0.75}
               onPress={() => openLogin(action.role)}
             >
-              <View style={styles.actionTopRow}>
-                <Text style={styles.actionMeta}>{action.meta}</Text>
-                <View style={styles.actionIcon}>
-                  <Text style={styles.actionIconText}>{'>'}</Text>
-                </View>
-              </View>
               <Text style={styles.actionTitle}>{action.title}</Text>
               <Text style={styles.actionDescription}>
                 {action.description}
@@ -83,7 +70,7 @@ const LandingScreen: React.FC<Props> = ({ navigation }) => {
               <View style={styles.actionFooter}>
                 <Text style={styles.actionLink}>Continue</Text>
               </View>
-            </Pressable>
+            </TouchableOpacity>
           ))}
         </View>
 
@@ -167,49 +154,10 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary,
     borderRadius: radii.card,
     padding: 20,
-    borderWidth: 1,
-    borderColor: '#263740',
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.14,
-    shadowRadius: 18,
-    elevation: 4,
-  },
-  driverCard: {
-    backgroundColor: '#23343d',
-  },
-  actionCardPressed: {
-    opacity: 0.92,
-    transform: [{ scale: 0.99 }],
-  },
-  actionTopRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 14,
-  },
-  actionMeta: {
-    color: '#b9c4c7',
-    fontSize: 12,
-    fontWeight: '800',
-    textTransform: 'uppercase',
-  },
-  actionIcon: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(255,255,255,0.12)',
-  },
-  actionIconText: {
-    color: colors.primaryText,
-    fontSize: 18,
-    fontWeight: '900',
   },
   actionTitle: {
     fontSize: 22,
-    fontWeight: '800',
+    fontWeight: '700',
     color: colors.primaryText,
     marginBottom: 8,
   },
@@ -223,7 +171,7 @@ const styles = StyleSheet.create({
   },
   actionLink: {
     fontSize: 15,
-    fontWeight: '800',
+    fontWeight: '700',
     color: colors.primaryText,
   },
   signupSection: {
